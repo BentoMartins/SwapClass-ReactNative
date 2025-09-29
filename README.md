@@ -23,7 +23,7 @@ curl -s https://fakestoreapi.com/users | jq '.[] | {username, password}'
 
 
 # Integrantes do Grupo
-Augusto Godoy - 1136630
-Bento Martins - 1125095
-Gabriel Rico - 1136215
-Ricardo Zanandrea - 1136748
+- Augusto Godoy - 1136630
+- Bento Martins - 1125095
+- Gabriel Rico - 1136215
+- Ricardo Zanandrea - 1136748
