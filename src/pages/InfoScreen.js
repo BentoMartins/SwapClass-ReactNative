@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { RESPONSIVE, isSmallScreen, isLargeScreen, isTablet } from '../utils/responsive';
 
 export default function InfoScreen() {
   return (
@@ -41,41 +42,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   container: {
-    padding: 20,
+    padding: isTablet() ? RESPONSIVE.PADDING_XL : RESPONSIVE.PADDING_MEDIUM,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: isSmallScreen() ? RESPONSIVE.HEADER : isTablet() ? RESPONSIVE.HEADER * 1.2 : RESPONSIVE.HEADER,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: RESPONSIVE.MARGIN_SMALL,
   },
   description: {
-    fontSize: 16,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_MEDIUM : isTablet() ? RESPONSIVE.BODY_LARGE : RESPONSIVE.BODY_MEDIUM,
     textAlign: 'center',
     color: '#6c757d',
-    marginBottom: 32,
-    lineHeight: 24,
+    marginBottom: isTablet() ? RESPONSIVE.MARGIN_XL : RESPONSIVE.MARGIN_XL,
+    lineHeight: isTablet() ? 28 : 24,
   },
   memberCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#000',
+    borderLeftWidth: 6,
+    borderBottomWidth: 6,
+    borderLeftColor: '#000',
+    borderBottomColor: '#000',
+    borderRadius: RESPONSIVE.BORDER_RADIUS_MEDIUM,
+    padding: isTablet() ? RESPONSIVE.PADDING_LARGE : RESPONSIVE.PADDING_SMALL,
+    marginBottom: RESPONSIVE.MARGIN_SMALL,
     alignItems: 'center',
-    elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
+    minHeight: isTablet() ? 100 : 80,
+    justifyContent: 'center',
   },
   memberName: {
-    fontSize: 18,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_LARGE : isTablet() ? RESPONSIVE.BODY_LARGE * 1.1 : RESPONSIVE.BODY_LARGE,
     fontWeight: '600',
+    textAlign: 'center',
   },
   memberRA: {
-    fontSize: 16,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_MEDIUM : isTablet() ? RESPONSIVE.BODY_MEDIUM * 1.1 : RESPONSIVE.BODY_MEDIUM,
     color: '#6c757d',
-    marginTop: 4,
+    marginTop: RESPONSIVE.PADDING_XS,
+    textAlign: 'center',
   },
 });
 

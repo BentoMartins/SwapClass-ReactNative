@@ -27,3 +27,4 @@ curl -s https://fakestoreapi.com/users | jq '.[] | {username, password}'
 - Bento Martins - 1125095
 - Gabriel Rico - 1136215
 - Ricardo Zanandrea - 1136748
+

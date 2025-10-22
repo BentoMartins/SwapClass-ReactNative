@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView
 } from 'react-native';
+import { RESPONSIVE, isSmallScreen, isLargeScreen, isTablet } from '../utils/responsive';
 import axios from 'axios';
 
 //REcebe 'route' para pegar os parametros e 'navigation' para customizar o header
@@ -73,41 +74,58 @@ export default function ProductDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { flex: 1, backgroundColor: '#fff' },
+  centered: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
   image: {
     width: '100%',
-    height: 300,
+    height: isTablet() ? 400 : isSmallScreen() ? 250 : 300,
     backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#000',
+    borderLeftWidth: 6,
+    borderBottomWidth: 6,
+    borderLeftColor: '#000',
+    borderBottomColor: '#000',
+    borderRadius: RESPONSIVE.BORDER_RADIUS_MEDIUM,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
   },
   detailsContainer: {
-    padding: 20,
+    padding: isTablet() ? RESPONSIVE.PADDING_XL : RESPONSIVE.PADDING_MEDIUM,
   },
   category: {
-    fontSize: 14,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_SMALL : isTablet() ? RESPONSIVE.BODY_MEDIUM : RESPONSIVE.BODY_SMALL,
     color: '#6c757d',
-    marginBottom: 8,
+    marginBottom: RESPONSIVE.MARGIN_XS,
     textTransform: 'capitalize',
   },
   title: {
-    fontSize: 22,
+    fontSize: isSmallScreen() ? RESPONSIVE.SUBTITLE : isTablet() ? RESPONSIVE.SUBTITLE * 1.2 : RESPONSIVE.SUBTITLE,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: RESPONSIVE.MARGIN_XS,
+    lineHeight: isTablet() ? 30 : 26,
   },
   price: {
-    fontSize: 24,
+    fontSize: isSmallScreen() ? RESPONSIVE.TITLE_SMALL : isTablet() ? RESPONSIVE.TITLE_MEDIUM : RESPONSIVE.TITLE_SMALL,
     fontWeight: 'bold',
     color: '#28a745',
-    marginBottom: 16,
+    marginBottom: RESPONSIVE.MARGIN_SMALL,
   },
   descriptionLabel: {
-    fontSize: 16,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_MEDIUM : isTablet() ? RESPONSIVE.BODY_LARGE : RESPONSIVE.BODY_MEDIUM,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: RESPONSIVE.MARGIN_XS,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: isSmallScreen() ? RESPONSIVE.BODY_MEDIUM : isTablet() ? RESPONSIVE.BODY_LARGE : RESPONSIVE.BODY_MEDIUM,
+    lineHeight: isTablet() ? 28 : 24,
     color: '#343a40',
   },
 });
