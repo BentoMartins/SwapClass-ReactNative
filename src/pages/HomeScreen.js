@@ -204,13 +204,19 @@ useEffect(() => {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.navItem}
-          onPress={() => setActiveTab('add')}
+          onPress={() => {
+            setActiveTab('add');
+            navigation.navigate('Sell');
+          }}
         >
           <Image source={require('../../assets/publicar-icon.png')} style={styles.navIcon} />
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.navItem}
-          onPress={() => setActiveTab('profile')}
+          onPress={() => {
+            setActiveTab('profile');
+            navigation.navigate('UserProfile');
+          }}
         >
           <Image source={require('../../assets/conta-icon.png')} style={styles.navIcon} />
         </TouchableOpacity>
@@ -332,17 +338,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 60,
   },
-  navItem: {
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 40,
-    minHeight: 40,
-  },
   navIcon: {
     width: 27,
     height: 26,
-    tintColor: '#fff',
+    tintColor: '#FFFFFF',
+  },
+  navIconActive: {
+    width: 24,
+    height: 24,
+    tintColor: '#FF007A',
   },
 });
 

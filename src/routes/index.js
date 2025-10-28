@@ -11,6 +11,8 @@ import CategoryScreen from '../pages/CategoryScreen';
 import InfoScreen from '../pages/InfoScreen';
 import ProductDetailScreen from '../pages/ProductDetailScreen';
 import ForgotPasswordScreen from '../pages/ForgotPasswordScreen';
+import SellScreen from '../pages/SellScreen';
+import UserProfileScreen from '../pages/UserProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -68,6 +70,20 @@ export default function MainNavigator() {
           name="ProductDetail" 
           component={ProductDetailScreen}
           options={{ title: 'Detalhes do Produto' }} 
+        />
+
+        {/* Tela Sell */}
+        <Stack.Screen 
+          name="Sell" 
+          component={SellScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela UserProfile */}
+        <Stack.Screen 
+          name="UserProfile" 
+          component={UserProfileScreen}
+          options={{ headerShown: false }}
         />
 
       </Stack.Navigator>

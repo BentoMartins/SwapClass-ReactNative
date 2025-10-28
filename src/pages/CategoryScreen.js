@@ -19,7 +19,8 @@ export default function CategoryScreen({ navigation }) {
       id: 1,
       name: 'Móveis',
       icon: require('../../assets/cadeira-icon.png'),
-
+      starIcon: require('../../assets/icon2-category.png'),
+      starPosition: 'bottom-right',
     },
     {
       id: 2,
@@ -35,11 +36,15 @@ export default function CategoryScreen({ navigation }) {
       id: 4,
       name: 'Tênis',
       icon: require('../../assets/tenis-icon.png'),
+      starIcon: require('../../assets/icon1-category.png'),
+      starPosition: 'top-left',
     },
     {
       id: 5,
       name: 'Livros',
       icon: require('../../assets/livros-icon.png'),
+      starIcon: require('../../assets/icon3-category.png'),
+      starPosition: 'bottom-left',
     },
     {
       id: 6,
@@ -91,6 +96,17 @@ export default function CategoryScreen({ navigation }) {
               ]}
               onPress={() => handleCategoryPress(category)}
             >
+              {category.starIcon && (
+                <Image 
+                  source={category.starIcon} 
+                  style={[
+                    styles.starIcon,
+                    category.starPosition === 'top-left' && styles.starTopLeft,
+                    category.starPosition === 'bottom-right' && styles.starBottomRight,
+                    category.starPosition === 'bottom-left' && styles.starBottomLeft,
+                  ]} 
+                />
+              )}
               {category.emoji && (
                 <Text style={styles.categoryEmoji}>{category.emoji}</Text>
               )}
@@ -119,17 +135,26 @@ export default function CategoryScreen({ navigation }) {
           style={styles.navItem}
           onPress={() => setActiveTab('search')}
         >
-          <Image source={require('../../assets/lupa-icon.png')} style={styles.navIcon} />
+          <Image 
+            source={activeTab === 'search' ? require('../../assets/lupaPreenchida-icon.png') : require('../../assets/lupa-icon.png')} 
+            style={styles.navIcon} 
+          />
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.navItem}
-          onPress={() => setActiveTab('add')}
+          onPress={() => {
+            setActiveTab('add');
+            navigation.navigate('Sell');
+          }}
         >
           <Image source={require('../../assets/publicar-icon.png')} style={styles.navIcon} />
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.navItem}
-          onPress={() => setActiveTab('profile')}
+          onPress={() => {
+            setActiveTab('profile');
+            navigation.navigate('UserProfile');
+          }}
         >
           <Image source={require('../../assets/conta-icon.png')} style={styles.navIcon} />
         </TouchableOpacity>
@@ -141,7 +166,7 @@ export default function CategoryScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FF55CC',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -149,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#3C1342',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 25,
     paddingBottom: 15,
   },
   headerTitle: {
@@ -200,6 +225,7 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    paddingTop: 20,
   },
   categoriesGrid: {
     flexDirection: 'row',
@@ -207,9 +233,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryCard: {
-    width: '45%',
+    width: '48%',
     backgroundColor: '#fff',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#000',
     borderLeftWidth: 6,
     borderBottomWidth: 6,
@@ -234,18 +260,42 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    fontSize: 16,
+    fontSize: 20,
     zIndex: 1,
   },
+  starIcon: {
+    position: 'absolute',
+    width: 55,
+    height: 55,
+    zIndex: 2,
+  },
+  starTopLeft: {
+    width: 50,
+    height: 50,
+    top: 142,
+    left: 142,
+  },
+  starBottomRight: {
+    width: 45,
+    height: 45,
+    bottom: 140,
+    right: 150,
+  },
+  starBottomLeft: {
+    width: 50,
+    height: 50,
+    bottom: -20,
+    left: -22,
+  },
   categoryImage: {
-    width: 80,
-    height: 80,
+    width: 110,
+    height: 110,
     borderRadius: 8,
     marginBottom: 10,
   },
   categoryName: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 21,
+    fontWeight: '500',
     color: '#000',
     textAlign: 'center',
   },
