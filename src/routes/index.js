@@ -13,6 +13,10 @@ import ProductDetailScreen from '../pages/ProductDetailScreen';
 import ForgotPasswordScreen from '../pages/ForgotPasswordScreen';
 import SellScreen from '../pages/SellScreen';
 import UserProfileScreen from '../pages/UserProfileScreen';
+import MyAdsScreen from '../pages/MyAdsScreen';
+import FavoritesScreen from '../pages/FavoritesScreen';
+import FAQScreen from '../pages/FAQScreen';
+import EditDataScreen from '../pages/EditDataScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -69,7 +73,7 @@ export default function MainNavigator() {
         <Stack.Screen 
           name="ProductDetail" 
           component={ProductDetailScreen}
-          options={{ title: 'Detalhes do Produto' }} 
+          options={{ headerShown: false }} 
         />
 
         {/* Tela Sell */}
@@ -83,6 +87,34 @@ export default function MainNavigator() {
         <Stack.Screen 
           name="UserProfile" 
           component={UserProfileScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela MyAds */}
+        <Stack.Screen 
+          name="MyAds" 
+          component={MyAdsScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela Favorites */}
+        <Stack.Screen 
+          name="Favorites" 
+          component={FavoritesScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela FAQ */}
+        <Stack.Screen 
+          name="FAQ" 
+          component={FAQScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela EditData */}
+        <Stack.Screen 
+          name="EditData" 
+          component={EditDataScreen}
           options={{ headerShown: false }}
         />
 
