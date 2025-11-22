@@ -16,6 +16,7 @@ import UserProfileScreen from '../pages/UserProfileScreen';
 import MyAdsScreen from '../pages/MyAdsScreen';
 import FavoritesScreen from '../pages/FavoritesScreen';
 import FAQScreen from '../pages/FAQScreen';
+import SupportScreen from '../pages/SupportScreen';
 import EditDataScreen from '../pages/EditDataScreen';
 
 const Stack = createNativeStackNavigator();
@@ -108,6 +109,13 @@ export default function MainNavigator() {
         <Stack.Screen 
           name="FAQ" 
           component={FAQScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela Support */}
+        <Stack.Screen 
+          name="Support" 
+          component={SupportScreen}
           options={{ headerShown: false }}
         />
 

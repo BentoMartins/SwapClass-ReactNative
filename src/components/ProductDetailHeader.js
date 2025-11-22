@@ -14,11 +14,11 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   iconButton: {
-    padding: RESPONSIVE.PADDING_XS,
+    padding: 12,
   },
   icon: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     tintColor: "#FF007A",
   },
 });

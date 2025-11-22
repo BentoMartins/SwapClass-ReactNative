@@ -27,19 +27,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -10,
     right: -10,
-    width: 50,
-    height: 30,
-    backgroundColor: "#FF007A", // Cor Rosa
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
   decorativeIcon: {
-    width: 25,
-    height: 25,
-    tintColor: "#FFFFFF",
+    width:63,
+    height: 63,
+    top: -15,
+    right: -10,
+    // Sem tintColor para preservar as cores originais da estrela rosa
   },
   userContent: {
     flexDirection: "row",

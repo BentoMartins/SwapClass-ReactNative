@@ -4,7 +4,7 @@ import { View, StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   header: {
     backgroundColor: "#3C1342", // Cor principal do tema (Roxo)
-    height: 140,
+    height: 150,
   },
 });
 

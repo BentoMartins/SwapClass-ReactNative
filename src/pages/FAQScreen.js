@@ -23,10 +23,11 @@ const styles = StyleSheet.create({
     paddingBottom: RESPONSIVE.PADDING_LARGE,
   },
   sectionTitle: {
-    fontSize: RESPONSIVE.SUBTITLE,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#000",
     marginBottom: RESPONSIVE.MARGIN_MEDIUM,
+    marginTop: RESPONSIVE.MARGIN_SMALL,
   },
   faqItem: {
     backgroundColor: "#fff",
@@ -40,29 +41,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: RESPONSIVE.PADDING_MEDIUM,
+    padding: RESPONSIVE.PADDING_SMALL,
   },
   questionText: {
-    fontSize: RESPONSIVE.BODY_MEDIUM,
+    fontSize: 14,
     fontWeight: "600",
     color: "#000",
     flex: 1,
     marginRight: RESPONSIVE.MARGIN_SMALL,
   },
   chevronIcon: {
-    fontSize: RESPONSIVE.BODY_MEDIUM,
+    fontSize: 14,
     color: "#FF007A",
+    fontWeight: "bold",
   },
   faqAnswer: {
-    paddingHorizontal: RESPONSIVE.PADDING_MEDIUM,
-    paddingBottom: RESPONSIVE.PADDING_MEDIUM,
-    borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
+    paddingHorizontal: RESPONSIVE.PADDING_SMALL,
+    paddingBottom: RESPONSIVE.PADDING_SMALL,
+    paddingTop: RESPONSIVE.PADDING_XS,
   },
   answerText: {
-    fontSize: RESPONSIVE.BODY_MEDIUM,
-    color: "#666",
-    lineHeight: RESPONSIVE.BODY_MEDIUM * 1.5,
+    fontSize: 13,
+    color: "#666666",
+    lineHeight: 18,
   },
 });
 
@@ -72,7 +73,7 @@ const faqData = [
     id: 1,
     question: "Como faço para publicar um anúncio?",
     answer:
-      "Para publicar um anúncio, acesse a aba 'Publicar' na barra de navegação inferior. Preencha todas as informações solicitadas, adicione fotos do produto e clique em 'Publicar'. Seu anúncio será revisado e estará disponível em breve.",
+      "Para criar um anúncio, vá até a aba 'Publicar' localizada na barra de navegação inferior. Preencha todas as informações necessárias, adicione as fotos do produto e finalize clicando em 'Publicar'. Seu anúncio passará por uma revisão e ficará disponível em breve.",
   },
   {
     id: 2,
@@ -104,16 +105,11 @@ const faqData = [
     answer:
       "Sim! O SwapClass é totalmente gratuito para publicar anúncios e buscar produtos. Não cobramos taxas ou comissões pelas transações realizadas.",
   },
-  {
-    id: 7,
-    question: "Como faço para sair da minha conta?",
-    answer:
-      "Para sair da sua conta, acesse o seu perfil e role até o final da página. Clique no botão vermelho 'SAIR DA CONTA' para fazer logout.",
-  },
 ];
 
 export default function FAQScreen({ navigation }) {
-  const [expandedItems, setExpandedItems] = useState([]);
+  // Primeira pergunta expandida por padrão
+  const [expandedItems, setExpandedItems] = useState([1]);
 
   const toggleItem = (id) => {
     setExpandedItems((prev) =>
@@ -137,7 +133,7 @@ export default function FAQScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         {/* Título da seção */}
-        <Text style={styles.sectionTitle}>Perguntas Frequentes</Text>
+        <Text style={styles.sectionTitle}>Perguntas frequentes</Text>
 
         {/* Lista de perguntas e respostas */}
         {faqData.map((item) => {

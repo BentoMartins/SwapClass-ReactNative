@@ -24,11 +24,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#000000",
   },
-  arrowIcon: {
-    width: 15,
-    height: 10,
-    tintColor: "#FF007A",
-  },
 });
 
 /**
@@ -41,11 +36,6 @@ export default function OptionItem({ text, icon, onPress }) {
         <Image source={icon} style={styles.optionIcon} resizeMode="contain" />
         <Text style={styles.optionText}>{text}</Text>
       </View>
-      <Image
-        source={require("../../assets/flecha-icon.png")}
-        style={styles.arrowIcon}
-        resizeMode="contain"
-      />
     </TouchableOpacity>
   );
 }

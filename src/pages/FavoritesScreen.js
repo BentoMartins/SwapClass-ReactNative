@@ -15,7 +15,6 @@ import axios from "axios";
 import AppHeader from "../components/AppHeader";
 import SectionHeader from "../components/SectionHeader";
 import FavoriteProductCard from "../components/FavoriteProductCard";
-import BottomNavigationBar from "../components/BottomNavigationBar";
 
 const styles = StyleSheet.create({
   container: {
@@ -57,7 +56,6 @@ export default function FavoritesScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("home");
 
   // Buscar produtos da FakeStore API (simulando favoritos)
   useEffect(() => {
@@ -115,7 +113,13 @@ export default function FavoritesScreen({ navigation }) {
   };
 
   const handleBackPress = () => {
-    navigation.goBack();
+    // Verifica se há uma tela anterior na pilha de navegação
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // Se não houver tela anterior, navega para a Home como fallback
+      navigation.navigate("Home");
+    }
   };
 
   const handleProductPress = (productId) => {
@@ -127,32 +131,6 @@ export default function FavoritesScreen({ navigation }) {
     setFavorites(favorites.filter((item) => item.id !== productId));
   };
 
-  // Define os itens de navegação
-  const navItems = [
-    {
-      name: "home",
-      icon: require("../../assets/casa-icon.png"),
-      activeIcon: require("../../assets/casaPreenchida-icon.png"),
-      navigateTo: "Home",
-    },
-    {
-      name: "search",
-      icon: require("../../assets/lupa-icon.png"),
-      navigateTo: "Category",
-    },
-    {
-      name: "add",
-      icon: require("../../assets/publicar-icon.png"),
-      navigateTo: "Sell",
-    },
-    {
-      name: "profile",
-      icon: require("../../assets/conta-icon.png"),
-      activeIcon: require("../../assets/contaPreenchida-icon.png"),
-      navigateTo: "UserProfile",
-    },
-  ];
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#3C1342" />
@@ -162,7 +140,7 @@ export default function FavoritesScreen({ navigation }) {
         title="SwapClass"
         onBackPress={handleBackPress}
         onActionPress={() => navigateToFavorites(navigation)}
-        actionIcon={require("../../assets/coracao-icon.png")}
+        actionIcon={require("../../assets/coracaoPreenchido-icon.png")}
       />
 
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -199,14 +177,6 @@ export default function FavoritesScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
-
-      {/* Bottom Navigation Bar */}
-      <BottomNavigationBar
-        items={navItems}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onNavigate={navigation.navigate}
-      />
     </View>
   );
 }

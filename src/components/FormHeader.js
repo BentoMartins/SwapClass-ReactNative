@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   backButton: {
-    padding: 8,
+    padding: 12,
   },
   backIcon: {
     width: 20,

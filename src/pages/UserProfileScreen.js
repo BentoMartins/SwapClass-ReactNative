@@ -30,14 +30,14 @@ const accountOptions = [
 
 const serviceOptions = [
   {
+    text: "Perguntas frequentes",
+    icon: require("../../assets/perguntasFrequentes-icon.png"),
+    route: "FAQ",
+  },
+  {
     text: "Contate o suporte",
     icon: require("../../assets/suporte-icon.png"),
     route: "Support",
-  },
-  {
-    text: "Perguntas frequentes",
-    icon: require("../../assets/livros-icon.png"), // Usando ícone de livros como placeholder
-    route: "FAQ",
   },
 ];
 

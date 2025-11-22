@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 
 const styles = StyleSheet.create({
   header: {
@@ -17,11 +18,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
   },
+  headerTitleContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 0,
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#FF007A", // Cor do título (ex: SwapClass)
-    flex: 1,
+    textAlign: "center",
   },
   headerTitleLeft: {
     textAlign: "left",
@@ -30,13 +39,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   backButton: {
-    padding: 8,
+    padding: 12,
     marginRight: 10,
   },
   backIcon: {
-    width: 25,
-    height: 22,
-    tintColor: "#FFFFFF",
+    width: 20,
+    height: 20,
+    tintColor: "#FF007A",
   },
   actionButton: {
     padding: 8,
@@ -45,7 +54,6 @@ const styles = StyleSheet.create({
   actionIcon: {
     width: 25,
     height: 22,
-    tintColor: "#FFFFFF",
   },
 });
 
@@ -63,24 +71,38 @@ export default function AppHeader({
   actionIcon,
 }) {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  
+  const handleBackPress = () => {
+    if (onBackPress) {
+      onBackPress();
+    } else {
+      // Se não houver callback customizado, usa a navegação padrão
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
+    }
+  };
+  
+  const paddingTop = Math.max(insets.top, 10);
   
   return (
-    <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+    <View style={[styles.header, { paddingTop }]}>
       <View style={styles.headerContent}>
-        {onBackPress && (
-          <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
+        {(onBackPress || navigation.canGoBack()) && (
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Image
               source={require("../../assets/voltar-icon.png")}
               style={styles.backIcon}
             />
           </TouchableOpacity>
         )}
-        <Text
-          style={[
-            styles.headerTitle,
-            onBackPress ? styles.headerTitleCenter : styles.headerTitleLeft,
-          ]}
-        >
+      </View>
+      <View 
+        style={[styles.headerTitleContainer, { top: paddingTop, bottom: 15 }]}
+        pointerEvents="none"
+      >
+        <Text style={styles.headerTitle}>
           {title}
         </Text>
       </View>
