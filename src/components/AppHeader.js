@@ -63,12 +63,14 @@ const styles = StyleSheet.create({
  * @param {function} onBackPress - Função chamada ao pressionar o botão de voltar (opcional).
  * @param {function} onActionPress - Função chamada ao pressionar o botão de ação (opcional).
  * @param {number} actionIcon - URI/require da imagem do ícone de ação (ex: coração).
+ * @param {boolean} showBackButton - Se false, oculta o botão de voltar mesmo que possa voltar (padrão: true).
  */
 export default function AppHeader({
   title,
   onBackPress,
   onActionPress,
   actionIcon,
+  showBackButton = true,
 }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -86,10 +88,12 @@ export default function AppHeader({
   
   const paddingTop = Math.max(insets.top, 10);
   
+  const shouldShowBackButton = showBackButton && (onBackPress || navigation.canGoBack());
+  
   return (
     <View style={[styles.header, { paddingTop }]}>
       <View style={styles.headerContent}>
-        {(onBackPress || navigation.canGoBack()) && (
+        {shouldShowBackButton && (
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <Image
               source={require("../../assets/voltar-icon.png")}

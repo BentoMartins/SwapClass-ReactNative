@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, StatusBar } from "react-native";
+import { View, Text, StyleSheet, StatusBar, ScrollView } from "react-native";
 
 // Componentes Genéricos
 import ProfileHeader from "../components/ProfileHeader";
@@ -72,10 +72,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  scrollContainer: {
+  contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 100,
-    paddingBottom: 100,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -112,8 +112,8 @@ export default function UserProfileScreen({ navigation }) {
         decorativeIcon={require("../../assets/estrelaRosa-icon.png")}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.sectionTitle}>Minha conta</Text>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={[styles.sectionTitle, { marginTop: 80 }]}>Minha conta</Text>
         <OptionGroupCard
           options={accountOptions}
           onOptionPress={handleOptionPress}
@@ -130,7 +130,7 @@ export default function UserProfileScreen({ navigation }) {
           onPress={handleLogout}
           backgroundColor="#FF0000" // Cor de alerta
           textColor="#FFFFFF"
-          style={{ marginTop: 50, marginBottom: 40 }}
+          style={{ marginTop: 20, marginBottom: 40 }}
         />
       </ScrollView>
 

@@ -202,6 +202,7 @@ export default function CategoryScreen({ navigation }) {
         title="SwapClass"
         onActionPress={() => navigateToFavorites(navigation)}
         actionIcon={require("../../assets/coracao-icon.png")}
+        showBackButton={false}
       />
 
       {/* 3. Componente Genérico de Barra de Busca */}

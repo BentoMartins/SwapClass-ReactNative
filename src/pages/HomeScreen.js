@@ -133,6 +133,7 @@ export default function HomeScreen({ navigation }) {
         title="SwapClass"
         onActionPress={() => navigateToFavorites(navigation)}
         actionIcon={require("../../assets/coracao-icon.png")}
+        showBackButton={false}
       />
 
       <ScrollView style={styles.scrollContainer}>
