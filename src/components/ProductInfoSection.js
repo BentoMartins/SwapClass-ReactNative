@@ -19,6 +19,11 @@ const styles = StyleSheet.create({
     marginBottom: RESPONSIVE.MARGIN_XS,
     lineHeight: isTablet() ? 32 : 28,
   },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: RESPONSIVE.MARGIN_XS,
+  },
   price: {
     fontSize: isSmallScreen()
       ? RESPONSIVE.TITLE_SMALL
@@ -27,7 +32,23 @@ const styles = StyleSheet.create({
       : RESPONSIVE.TITLE_SMALL,
     fontWeight: "bold",
     color: "#000",
-    marginBottom: RESPONSIVE.MARGIN_XS,
+    flex: 1,
+  },
+  convertButton: {
+    paddingHorizontal: RESPONSIVE.PADDING_SMALL,
+    paddingVertical: RESPONSIVE.PADDING_XS / 2,
+    backgroundColor: "#FF007A",
+    borderRadius: RESPONSIVE.BORDER_RADIUS_MEDIUM,
+    marginLeft: RESPONSIVE.MARGIN_XS,
+    borderWidth: 2,
+    borderColor: "#000",
+    borderLeftWidth: 4,
+    borderBottomWidth: 4,
+  },
+  convertButtonText: {
+    color: "#FFFFFF",
+    fontSize: RESPONSIVE.BODY_SMALL,
+    fontWeight: "bold",
   },
   metadata: {
     fontSize: RESPONSIVE.BODY_SMALL,
@@ -98,6 +119,8 @@ const styles = StyleSheet.create({
  * @param {string} sellerName - Nome do vendedor.
  * @param {string|number} sellerAvatar - URI ou require da foto do vendedor.
  * @param {function} onMessagePress - Função chamada ao pressionar o botão de mensagem.
+ * @param {function} onConvertPress - Função chamada ao pressionar o botão de conversão de moeda.
+ * @param {string} convertButtonText - Texto do botão de conversão (ex: "USD", "EUR").
  */
 export default function ProductInfoSection({
   title,
@@ -107,11 +130,20 @@ export default function ProductInfoSection({
   sellerName,
   sellerAvatar,
   onMessagePress,
+  onConvertPress,
+  convertButtonText,
 }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.price}>{price}</Text>
+      <View style={styles.priceContainer}>
+        <Text style={styles.price}>{price}</Text>
+        {onConvertPress && convertButtonText && (
+          <TouchableOpacity style={styles.convertButton} onPress={onConvertPress}>
+            <Text style={styles.convertButtonText}>{convertButtonText}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {listedTime && <Text style={styles.metadata}>{listedTime}</Text>}
       
       {distance && (

@@ -9,7 +9,8 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import axios from "axios";
+import productService from "../services/product";
+import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes Genéricos Reutilizados
 import AppHeader from "../components/AppHeader";
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   centered: {
     flex: 1,
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
 });
 
 export default function CategoryScreen({ navigation }) {
+  const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("search");
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -147,10 +149,10 @@ export default function CategoryScreen({ navigation }) {
     navigation.navigate("Home", { selectedCategory: category.name });
   };
 
-  const formatPrice = (price) => {
+  const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
-      currency: "BRL",
+      currency: productCurrency || "BRL",
     });
   };
 
@@ -167,27 +169,18 @@ export default function CategoryScreen({ navigation }) {
     setHasSearched(true);
 
     try {
-      // Busca todos os produtos da API
-      const response = await axios.get("https://fakestoreapi.com/products");
-      const allProducts = response.data;
-
-      // Filtra produtos que contenham o termo pesquisado no título ou descrição
-      const searchTerm = searchText.toLowerCase().trim();
-      const filtered = allProducts.filter((product) => {
-        const titleMatch = product.title.toLowerCase().includes(searchTerm);
-        const descriptionMatch = product.description
-          ? product.description.toLowerCase().includes(searchTerm)
-          : false;
-        const categoryMatch = product.category
-          ? product.category.toLowerCase().includes(searchTerm)
-          : false;
-
-        return titleMatch || descriptionMatch || categoryMatch;
-      });
-
-      setSearchResults(filtered);
+      // Busca produtos usando o ProductService
+      const results = await productService.searchProducts(searchText.trim(), currency);
+      
+      // A API pode retornar um array diretamente ou dentro de content
+      const productsList = Array.isArray(results) 
+        ? results 
+        : results?.content || results?.products || [];
+      
+      setSearchResults(productsList);
     } catch (err) {
-      setSearchError(err.message);
+      console.error("Erro ao buscar produtos:", err);
+      setSearchError(err.message || "Erro ao buscar produtos");
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -256,9 +249,9 @@ export default function CategoryScreen({ navigation }) {
                     key={item.id}
                     product={{
                       id: item.id,
-                      imageUri: item.image,
-                      price: formatPrice(item.price),
-                      title: item.title,
+                      imageUri: item.imageUrl || item.image,
+                      price: formatPrice(item.price, item.currency),
+                      title: item.brand || item.model || item.title || "Produto",
                     }}
                     onPress={() =>
                       navigation.navigate("ProductDetail", {

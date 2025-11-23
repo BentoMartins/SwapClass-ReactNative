@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -6,9 +6,12 @@ import {
   ScrollView,
   Linking,
   Alert,
+  Animated,
 } from "react-native";
 import { RESPONSIVE } from "../utils/responsive";
-import axios from "axios";
+import productService from "../services/product";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { useAuth } from "../contexts/AuthContext";
 
 // Componentes de Detalhes do Produto
 import ProductDetailHeader from "../components/ProductDetailHeader";
@@ -19,6 +22,7 @@ import ProductConditionSection from "../components/ProductConditionSection";
 import LocationSection from "../components/LocationSection";
 import UniversitySection from "../components/UniversitySection";
 import DataLoadingState from "../components/DataLoadingState";
+import ActionSheetModal from "../components/ActionSheetModal";
 
 // Estilos específicos da tela
 const styles = StyleSheet.create({
@@ -30,35 +34,59 @@ const styles = StyleSheet.create({
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
+  const { currency, changeCurrency } = useCurrency();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [displayPrice, setDisplayPrice] = useState(null);
+  const [displayCurrency, setDisplayCurrency] = useState(null);
+  const [isConverting, setIsConverting] = useState(false);
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  
+  // Animação para o modal de moeda
+  const currencySlideAnim = useRef(new Animated.Value(300)).current;
+  
+  // Moedas disponíveis
+  const availableCurrencies = ["BRL", "USD", "EUR"];
 
   // Lógica de busca de dados
   useEffect(() => {
     const fetchProductDetails = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        const response = await axios.get(
-          `https://fakestoreapi.com/products/${productId}`
-        );
-        setProduct(response.data);
+        const result = await productService.getProductById(productId, currency);
+        
+        if (result.error) {
+          setError(result.error);
+          setProduct(null);
+        } else {
+          setProduct(result.product);
+          // Inicializa o preço exibido com o preço original do produto
+          setDisplayPrice(result.product.price);
+          setDisplayCurrency(result.product.currency || currency);
+        }
       } catch (err) {
-        setError(err.message);
+        console.error("Erro ao buscar produto:", err);
+        setError(err.message || "Erro ao carregar produto");
+        setProduct(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProductDetails();
-  }, [productId]);
+  }, [productId, currency]);
 
   // Função utilitária para formatação
-  const formatPrice = (price) => {
+  const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
-      currency: "BRL",
+      currency: productCurrency || "BRL",
     });
   };
 
@@ -78,10 +106,55 @@ export default function ProductDetailScreen({ route, navigation }) {
     setIsFavorite(!isFavorite);
   };
 
+  // Função para abrir o modal de seleção de moeda
+  const handleOpenCurrencyModal = () => {
+    setShowCurrencyModal(true);
+  };
+
+  // Função para converter o preço para a moeda selecionada
+  const handleConvertPrice = async (selectedCurrency) => {
+    if (!product || isConverting) return;
+
+    // Fecha o modal
+    setShowCurrencyModal(false);
+
+    // Se a moeda selecionada for a mesma da atual, não faz nada
+    const currentCurrency = displayCurrency || product.currency || currency;
+    if (selectedCurrency === currentCurrency) {
+      return;
+    }
+
+    setIsConverting(true);
+    
+    try {
+      const result = await productService.convertProductPrice(productId, selectedCurrency);
+      
+      if (result.error) {
+        Alert.alert("Erro", result.error);
+      } else if (result.convertedPrice !== null && result.convertedPrice !== undefined) {
+        setDisplayPrice(result.convertedPrice);
+        setDisplayCurrency(result.currency);
+      } else {
+        Alert.alert("Erro", "Preço convertido não disponível.");
+      }
+    } catch (err) {
+      console.error("Erro ao converter preço:", err);
+      Alert.alert("Erro", "Não foi possível converter o preço. Tente novamente.");
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  // Obtém o texto do botão de conversão (mostra a moeda atual)
+  const getConvertButtonText = () => {
+    const currentCurrency = displayCurrency || product?.currency || currency;
+    return currentCurrency;
+  };
+
   // Função para abrir WhatsApp
   const openWhatsApp = async (sellerPhone) => {
-    const productTitle = product?.title || "Produto";
-    const productPrice = product?.price ? formatPrice(product.price) : "";
+    const productTitle = product?.brand || product?.model || product?.title || "Produto";
+    const productPrice = product?.price ? formatPrice(product.price, product?.currency) : "";
 
     // Mensagem pré-formatada
     const message = `Olá! Tenho interesse no produto: ${productTitle}${productPrice ? ` - ${productPrice}` : ""}`;
@@ -141,27 +214,52 @@ export default function ProductDetailScreen({ route, navigation }) {
     );
   }
 
-  // Dados mockados para demonstração (substituir com dados reais da API)
+  // Obtém o nome do vendedor do produto ou do usuário logado
+  const getSellerName = () => {
+    // Prioridade: sellerName do produto > seller.name > owner.name > user.name > user.name (logado)
+    return product?.sellerName || 
+           product?.seller?.name || 
+           product?.owner?.name || 
+           product?.user?.name || 
+           product?.creator?.name ||
+           user?.name || 
+           "Vendedor";
+  };
+
+  // Obtém o avatar do vendedor do produto ou usa o padrão
+  const getSellerAvatar = () => {
+    return product?.sellerAvatar || 
+           product?.seller?.avatar || 
+           product?.owner?.avatar || 
+           product?.user?.avatar ||
+           require("../../assets/user-icon.png");
+  };
+
+  // Obtém o telefone do vendedor do produto
+  const getSellerPhone = () => {
+    return product?.sellerPhone || 
+           product?.seller?.phone || 
+           product?.owner?.phone || 
+           product?.user?.phone ||
+           null;
+  };
+
+  // Dados mockados para demonstração (mantidos apenas para campos não disponíveis na API)
   const mockData = {
     distance: "Perto - 4 km",
-    sellerName: "Gabriel Rico",
-    sellerPhone: "5551999999999", // Formato: código do país + DDD + número
-    sellerAvatar: require("../../assets/user-icon.png"),
     condition: "Novo - Nunca Usado.",
-    description: "Mesinha de estudo simples e funcional\nIdeal para quem busca praticidade e organização no dia a dia.",
-    bulletPoints: [
-      "Estrutura firme e estável",
-      "Tampo amplo para livros, notebook ou materiais de estudo",
-      "Cor neutra que combina com qualquer ambiente",
-    ],
-    highlightText: "Perfeita para quarto, escritório ou home office.\nNUNCA USADA",
     location: "Passo Fundo - RS",
     universityName: "UPF - Universidade de Passo Fundo",
   };
 
-  // Atualiza handleMessagePress para usar o número do mockData
+  // Atualiza handleMessagePress para usar o telefone do vendedor
   const handleMessagePressWithData = () => {
-    openWhatsApp(mockData.sellerPhone);
+    const sellerPhone = getSellerPhone();
+    if (sellerPhone) {
+      openWhatsApp(sellerPhone);
+    } else {
+      Alert.alert("Informação", "Telefone do vendedor não disponível.");
+    }
   };
 
   // Renderização principal com os detalhes do produto
@@ -177,27 +275,29 @@ export default function ProductDetailScreen({ route, navigation }) {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Imagem do produto com indicador */}
         <ProductImageCarousel
-          imageUri={product.image}
+          imageUri={product.imageUrl || product.image}
           currentIndex={1}
           totalImages={1}
         />
 
         {/* Seção de informações principais */}
         <ProductInfoSection
-          title={product.title}
-          price={formatPrice(product.price)}
+          title={product.brand || product.model || product.title || "Produto"}
+          price={formatPrice(displayPrice || product.price, displayCurrency || product.currency)}
           listedTime={getListedTime()}
           distance={mockData.distance}
-          sellerName={mockData.sellerName}
-          sellerAvatar={mockData.sellerAvatar}
+          sellerName={getSellerName()}
+          sellerAvatar={getSellerAvatar()}
           onMessagePress={handleMessagePressWithData}
+          onConvertPress={handleOpenCurrencyModal}
+          convertButtonText={product ? getConvertButtonText() : null}
         />
 
         {/* Seção de descrição */}
         <ProductDescriptionSection
-          description={mockData.description}
-          bulletPoints={mockData.bulletPoints}
-          highlightText={mockData.highlightText}
+          description={product.description || ""}
+          bulletPoints={[]}
+          highlightText={""}
         />
 
         {/* Seção de condição */}
@@ -215,6 +315,16 @@ export default function ProductDetailScreen({ route, navigation }) {
           universityName={mockData.universityName}
         />
       </ScrollView>
+
+      {/* Modal de Seleção de Moeda */}
+      <ActionSheetModal
+        isVisible={showCurrencyModal}
+        onClose={() => setShowCurrencyModal(false)}
+        title="Selecione a moeda"
+        items={availableCurrencies}
+        onItemSelected={handleConvertPrice}
+        slideAnim={currencySlideAnim}
+      />
     </View>
   );
 }

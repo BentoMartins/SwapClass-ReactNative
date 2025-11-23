@@ -14,6 +14,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 8,
     marginBottom: 15,
+    marginRight: "3.33%", // Espaçamento consistente entre cards (10% restante / 3 espaços)
     alignItems: "center",
     position: "relative",
     shadowColor: "#000",

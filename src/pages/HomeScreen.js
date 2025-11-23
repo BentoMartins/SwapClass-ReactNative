@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { RESPONSIVE, getColumns } from "../utils/responsive";
 import { navigateToFavorites } from "../utils/navigationHelpers";
-import axios from "axios";
+import productService from "../services/product";
+import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes Genéricos
 import AppHeader from "../components/AppHeader"; // Novo Componente
@@ -41,11 +42,12 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
 });
 
 export default function HomeScreen({ navigation }) {
+  const { currency } = useCurrency();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,27 +67,28 @@ export default function HomeScreen({ navigation }) {
       setIsLoading(true);
       setError(null);
 
-      const endpoint = selectedCategory
-        ? `https://fakestoreapi.com/products/category/${selectedCategory}`
-        : "https://fakestoreapi.com/products";
-
       try {
-        const response = await axios.get(endpoint);
-        setProducts(response.data);
+        const productsData = await productService.getProducts(currency, 0, 20);
+        // A API pode retornar um array diretamente ou dentro de content
+        const productsList = Array.isArray(productsData) 
+          ? productsData 
+          : productsData?.content || productsData?.products || [];
+        setProducts(productsList);
       } catch (err) {
-        setError(err.message);
+        console.error("Erro ao buscar produtos:", err);
+        setError(err.message || "Erro ao carregar produtos");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProducts();
-  }, [selectedCategory]);
+  }, [selectedCategory, currency]);
 
-  const formatPrice = (price) => {
+  const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
-      currency: "BRL",
+      currency: productCurrency || "BRL",
     });
   };
 
@@ -155,9 +158,9 @@ export default function HomeScreen({ navigation }) {
                   key={item.id}
                   product={{
                     id: item.id,
-                    imageUri: item.image,
-                    price: formatPrice(item.price),
-                    title: item.title, // Embora o original só mostre o preço, incluí o título no objeto para reuso.
+                    imageUri: item.imageUrl || item.image,
+                    price: formatPrice(item.price, item.currency),
+                    title: item.brand || item.model || item.title || "Produto",
                   }}
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
@@ -176,9 +179,13 @@ export default function HomeScreen({ navigation }) {
           {/* 2. Componente Genérico de Header de Seção */}
           <SectionHeader title="Tudo até R$100!" emojis="💰💵" />
 
-          <View style={styles.productsGrid}>
+            <View style={styles.productsGrid}>
             {products
-              .filter((item) => item.price <= 100)
+              .filter((item) => {
+                // Considera conversão de moeda se necessário
+                const price = item.price || 0;
+                return price <= 100;
+              })
               .slice(0, 6)
               .map((item) => (
                 // 3. Componente Genérico de Card de Produto

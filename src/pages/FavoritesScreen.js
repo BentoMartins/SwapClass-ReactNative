@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { RESPONSIVE } from "../utils/responsive";
 import { navigateToFavorites } from "../utils/navigationHelpers";
-import axios from "axios";
+import productService from "../services/product";
+import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes
 import AppHeader from "../components/AppHeader";
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingHorizontal: 15,
   },
   centered: {
@@ -61,62 +62,68 @@ const styles = StyleSheet.create({
 });
 
 export default function FavoritesScreen({ navigation }) {
+  const { currency } = useCurrency();
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Buscar produtos da FakeStore API (simulando favoritos)
+  // Buscar produtos usando ProductService (simulando favoritos)
   useEffect(() => {
     const fetchFavorites = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get("https://fakestoreapi.com/products");
-        // Pegar alguns produtos para simular favoritos
         // Em produção, isso viria de uma API específica do usuário
-        const products = response.data.slice(0, 4);
+        // Por enquanto, busca produtos gerais e limita a 4
+        const productsData = await productService.getProducts(currency, 0, 4);
+        const productsList = Array.isArray(productsData) 
+          ? productsData 
+          : productsData?.content || productsData?.products || [];
+        const products = productsList.slice(0, 4);
         
         // Adicionar alguns descontos para alguns produtos
         const favoritesWithDiscounts = products.map((product, index) => {
-          const formattedPrice = formatPrice(product.price);
+          const productCurrency = product.currency || currency;
+          const formattedPrice = formatPrice(product.price, productCurrency);
           // Adicionar desconto para alguns produtos
           if (index === 1 || index === 3) {
             const discount = 10;
-            const originalPrice = formatPrice(product.price);
-            const discountedPrice = formatPrice(product.price * 0.9);
+            const originalPrice = formatPrice(product.price, productCurrency);
+            const discountedPrice = formatPrice(product.price * 0.9, productCurrency);
             return {
               id: product.id,
-              imageUri: product.image,
+              imageUri: product.imageUrl || product.image,
               price: discountedPrice,
               originalPrice: originalPrice,
               discount: discount,
-              title: product.title,
+              title: product.brand || product.model || product.title || "Produto",
             };
           }
           return {
             id: product.id,
-            imageUri: product.image,
+            imageUri: product.imageUrl || product.image,
             price: formattedPrice,
-            title: product.title,
+            title: product.brand || product.model || product.title || "Produto",
           };
         });
         
         setFavorites(favoritesWithDiscounts);
       } catch (err) {
-        setError(err.message);
+        console.error("Erro ao buscar favoritos:", err);
+        setError(err.message || "Erro ao carregar favoritos");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchFavorites();
-  }, []);
+  }, [currency]);
 
-  const formatPrice = (price) => {
+  const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
-      currency: "BRL",
+      currency: productCurrency || "BRL",
     });
   };
 

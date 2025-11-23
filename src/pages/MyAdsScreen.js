@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { RESPONSIVE, getColumns } from "../utils/responsive";
-import axios from "axios";
+import productService from "../services/product";
+import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes
 import AppHeader from "../components/AppHeader";
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingHorizontal: 15,
   },
   centered: {
@@ -66,35 +67,40 @@ const styles = StyleSheet.create({
 });
 
 export default function MyAdsScreen({ navigation }) {
+  const { currency } = useCurrency();
   const [myAds, setMyAds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Buscar produtos da FakeStore API
+  // Buscar produtos usando ProductService
   useEffect(() => {
     const fetchMyAds = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get("https://fakestoreapi.com/products");
-        // Pegar alguns produtos para simular "meus anúncios"
         // Em produção, isso viria de uma API específica do usuário
-        setMyAds(response.data.slice(0, 6)); // Primeiros 6 produtos
+        // Por enquanto, busca produtos gerais e limita a 6
+        const productsData = await productService.getProducts(currency, 0, 6);
+        const productsList = Array.isArray(productsData) 
+          ? productsData 
+          : productsData?.content || productsData?.products || [];
+        setMyAds(productsList.slice(0, 6));
       } catch (err) {
-        setError(err.message);
+        console.error("Erro ao buscar anúncios:", err);
+        setError(err.message || "Erro ao carregar anúncios");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMyAds();
-  }, []);
+  }, [currency]);
 
-  const formatPrice = (price) => {
+  const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
       style: "currency",
-      currency: "BRL",
+      currency: productCurrency || "BRL",
     });
   };
 
@@ -139,9 +145,9 @@ export default function MyAdsScreen({ navigation }) {
                   key={item.id}
                   product={{
                     id: item.id,
-                    imageUri: item.image,
-                    price: formatPrice(item.price),
-                    title: item.title,
+                    imageUri: item.imageUrl || item.image,
+                    price: formatPrice(item.price, item.currency),
+                    title: item.brand || item.model || item.title || "Produto",
                   }}
                   onPress={() => handleProductPress(item.id)}
                   onFavoritePress={() => console.log(`Favoritar item ${item.id}`)}
