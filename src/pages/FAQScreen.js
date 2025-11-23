@@ -108,8 +108,8 @@ const faqData = [
 ];
 
 export default function FAQScreen({ navigation }) {
-  // Primeira pergunta expandida por padrão
-  const [expandedItems, setExpandedItems] = useState([1]);
+  // Todas as perguntas começam fechadas
+  const [expandedItems, setExpandedItems] = useState([]);
 
   const toggleItem = (id) => {
     setExpandedItems((prev) =>

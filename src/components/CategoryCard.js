@@ -12,8 +12,8 @@ const styles = StyleSheet.create({
     borderLeftColor: "#000",
     borderBottomColor: "#000",
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
+    padding: 30,
+    marginBottom: 12,
     alignItems: "center",
     position: "relative",
     shadowColor: "#000",
@@ -23,13 +23,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   categoryImage: {
-    width: 110,
-    height: 110,
+    width: 70,
+    height: 70,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   categoryName: {
-    fontSize: 21,
+    fontSize: 16,
     fontWeight: "500",
     color: "#000",
     textAlign: "center",
@@ -40,22 +40,22 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   starPositionTopLeft: {
-    width: 50,
-    height: 50,
-    top: -20, // Ajustado para não ficar muito longe, baseado na imagem original (CategoryScreen.js)
-    left: -22,
+    width: 35,
+    height: 35,
+    top: 140,
+    left: 142,
   },
   starPositionBottomRight: {
-    width: 45,
-    height: 45,
-    bottom: -15, // Ajustado
-    right: -15, // Ajustado
+    width: 32,
+    height: 32,
+    bottom: 140,
+    right: 145,
   },
   starPositionBottomLeft: {
-    width: 50,
-    height: 50,
-    bottom: -20,
-    left: -22,
+    width: 35,
+    height: 35,
+    bottom: -15,
+    left: -15,
   },
   // Note: O estilo original tinha 'top: 142, left: 142' que parecia fora de contexto para o card
   // Ajustei as posições para serem relativas aos cantos do card.

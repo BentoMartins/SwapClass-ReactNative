@@ -10,7 +10,6 @@ import {
   Image,
   Modal,
   Animated,
-  Linking,
   Alert,
   Platform,
   KeyboardAvoidingView,
@@ -137,6 +136,19 @@ const styles = StyleSheet.create({
   modalButtonTextConfirm: {
     color: "#FFFFFF",
   },
+  successModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "left",
+    paddingLeft: 0,
+  },
+  successModalIcon: {
+    width: "90%",
+    height: "50%",
+    maxWidth: 400,
+    maxHeight: 400,
+  },
 });
 
 export default function SellScreen({ navigation }) {
@@ -149,10 +161,12 @@ export default function SellScreen({ navigation }) {
     location: "",
     university: "",
   });
+  const [photos, setPhotos] = useState([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showUniversityModal, setShowUniversityModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [locationInput, setLocationInput] = useState("");
   const [universityInput, setUniversityInput] = useState("");
 
@@ -170,8 +184,55 @@ export default function SellScreen({ navigation }) {
   };
 
   const handlePublish = () => {
-    console.log("Publicando item:", formData);
-    navigation.navigate("Home");
+    // Validação dos campos obrigatórios
+    if (!formData.title.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, preencha o título do item.");
+      return;
+    }
+
+    if (!formData.price.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, preencha o preço do item.");
+      return;
+    }
+
+    // Validar se o preço é um número válido
+    const priceValue = formData.price.replace(/[^\d,.-]/g, "").replace(",", ".");
+    if (isNaN(parseFloat(priceValue)) || parseFloat(priceValue) <= 0) {
+      Alert.alert("Preço inválido", "Por favor, insira um preço válido.");
+      return;
+    }
+
+    if (!formData.category.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, selecione uma categoria.");
+      return;
+    }
+
+    if (!formData.condition.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, selecione a condição do item.");
+      return;
+    }
+
+    if (!formData.location.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, preencha a localização.");
+      return;
+    }
+
+    if (!formData.university.trim()) {
+      Alert.alert("Campo obrigatório", "Por favor, preencha a universidade.");
+      return;
+    }
+
+    // Todos os campos obrigatórios estão preenchidos
+    console.log("Publicando item:", { ...formData, photos });
+    
+    // Mostrar modal de sucesso
+    setShowSuccessModal(true);
+    
+    // Fechar modal e navegar após 3 segundos
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      navigation.navigate("Home");
+    }, 3000);
   };
 
   const handleCategorySelect = (category) => {
@@ -194,37 +255,12 @@ export default function SellScreen({ navigation }) {
     }
   };
 
-  const handleLocationSelect = async () => {
+  const handleLocationSelect = () => {
     if (locationInput.trim()) {
-      // Salvar o endereço
       setFormData((prev) => ({ ...prev, location: locationInput.trim() }));
       setShowLocationModal(false);
-      
-      // Abrir Google Maps para seleção/visualização
-      await openGoogleMaps();
     } else {
       Alert.alert("Erro", "Por favor, digite um endereço.");
-    }
-  };
-
-  const openGoogleMaps = async () => {
-    const searchQuery = locationInput.trim();
-    const url = Platform.select({
-      ios: `maps://app?q=${encodeURIComponent(searchQuery)}`,
-      android: `geo:0,0?q=${encodeURIComponent(searchQuery)}`,
-    });
-
-    try {
-      const supported = await Linking.canOpenURL(url || "");
-      if (supported && url) {
-        await Linking.openURL(url);
-      } else {
-        // Fallback para Google Maps web
-        const webUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
-        await Linking.openURL(webUrl);
-      }
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível abrir o Google Maps.");
     }
   };
 
@@ -385,7 +421,7 @@ export default function SellScreen({ navigation }) {
                 onPress={handleLocationSelect}
               >
                 <Text style={[styles.modalButtonText, styles.modalButtonTextConfirm]}>
-                  Abrir Maps
+                  Salvar
                 </Text>
               </TouchableOpacity>
             </View>
@@ -441,6 +477,22 @@ export default function SellScreen({ navigation }) {
             </View>
           </View>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Modal de Sucesso */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {}}
+      >
+        <View style={styles.successModalOverlay}>
+          <Image
+            source={require("../../assets/modalSucesso-icon.png")}
+            style={styles.successModalIcon}
+            resizeMode="contain"
+          />
+        </View>
       </Modal>
     </View>
   );

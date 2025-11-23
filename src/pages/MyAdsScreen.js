@@ -55,6 +55,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: RESPONSIVE.BODY_MEDIUM * 1.5,
   },
+  satiricalText: {
+    fontSize: RESPONSIVE.BODY_MEDIUM,
+    color: "#9999",
+    textAlign: "center",
+    marginTop: 30,
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
 });
 
 export default function MyAdsScreen({ navigation }) {
@@ -124,21 +132,26 @@ export default function MyAdsScreen({ navigation }) {
             </Text>
           </View>
         ) : myAds.length > 0 ? (
-          <View style={styles.productsGrid}>
-            {myAds.map((item) => (
-              <ProductCard
-                key={item.id}
-                product={{
-                  id: item.id,
-                  imageUri: item.image,
-                  price: formatPrice(item.price),
-                  title: item.title,
-                }}
-                onPress={() => handleProductPress(item.id)}
-                onFavoritePress={() => console.log(`Favoritar item ${item.id}`)}
-              />
-            ))}
-          </View>
+          <>
+            <View style={styles.productsGrid}>
+              {myAds.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  product={{
+                    id: item.id,
+                    imageUri: item.image,
+                    price: formatPrice(item.price),
+                    title: item.title,
+                  }}
+                  onPress={() => handleProductPress(item.id)}
+                  onFavoritePress={() => console.log(`Favoritar item ${item.id}`)}
+                />
+              ))}
+            </View>
+            <Text style={styles.satiricalText}>
+              Tá limpinho demais por aqui...{"\n"}cadê os anúncios?
+            </Text>
+          </>
         ) : (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>

@@ -5,7 +5,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     marginBottom: 15,
     marginTop: 20,
   },
@@ -16,6 +15,7 @@ const styles = StyleSheet.create({
   },
   sectionEmojis: {
     fontSize: 16,
+    marginLeft: 8,
   },
 });
 

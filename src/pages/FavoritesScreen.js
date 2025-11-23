@@ -50,6 +50,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: RESPONSIVE.BODY_MEDIUM * 1.5,
   },
+  satiricalText: {
+    fontSize: RESPONSIVE.BODY_MEDIUM,
+    color: "#9999",
+    textAlign: "center",
+    marginTop: 30,
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
 });
 
 export default function FavoritesScreen({ navigation }) {
@@ -159,16 +167,21 @@ export default function FavoritesScreen({ navigation }) {
             </Text>
           </View>
         ) : favorites.length > 0 ? (
-          <View style={styles.productsGrid}>
-            {favorites.map((item) => (
-              <FavoriteProductCard
-                key={item.id}
-                product={item}
-                onPress={() => handleProductPress(item.id)}
-                onFavoritePress={() => handleFavoritePress(item.id)}
-              />
-            ))}
-          </View>
+          <>
+            <View style={styles.productsGrid}>
+              {favorites.map((item) => (
+                <FavoriteProductCard
+                  key={item.id}
+                  product={item}
+                  onPress={() => handleProductPress(item.id)}
+                  onFavoritePress={() => handleFavoritePress(item.id)}
+                />
+              ))}
+            </View>
+            <Text style={styles.satiricalText}>
+              Tá fraco, hein? Adiciona mais coisa aí!
+            </Text>
+          </>
         ) : (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>
