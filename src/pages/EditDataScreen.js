@@ -12,10 +12,8 @@ import {
 import { RESPONSIVE } from "../utils/responsive";
 
 // Componentes
-import FormHeader from "../components/FormHeader";
-import EditableField from "../components/EditableField";
-import LabelledTextInput from "../components/LabelledTextInput";
-import PrimaryButton from "../components/PrimaryButton";
+import AppHeader from "../components/AppHeader";
+import MenuGroup from "../components/MenuGroup";
 
 const styles = StyleSheet.create({
   container: {
@@ -24,7 +22,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   scrollContainer: {
-    paddingTop: 35,
     flex: 1,
     paddingBottom: 50,
   },
@@ -33,27 +30,17 @@ const styles = StyleSheet.create({
     paddingVertical: RESPONSIVE.PADDING_MEDIUM,
     paddingBottom: RESPONSIVE.PADDING_XL,
   },
-  formSection: {
-    marginBottom: RESPONSIVE.MARGIN_LARGE,
-  },
-  sectionTitle: {
-    fontSize: RESPONSIVE.SUBTITLE,
-    fontWeight: "bold",
-    color: "#000",
-    marginBottom: RESPONSIVE.MARGIN_MEDIUM,
-    marginTop: RESPONSIVE.MARGIN_SMALL,
-  },
   photoSection: {
+    marginTop: 40,
     marginBottom: RESPONSIVE.MARGIN_LARGE,
+    alignItems: "center",
   },
   photoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#FF007A",
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
     marginBottom: RESPONSIVE.MARGIN_SMALL,
     overflow: "hidden",
     shadowColor: "#000",
@@ -68,12 +55,11 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   photoPlaceholderIcon: {
-    width: 50,
-    height: 50,
-    tintColor: "#FFFFFF",
+    width: 150,
+    height: 150,
+    resizeMode: "cover",
   },
   changePhotoButton: {
-    alignSelf: "center",
     paddingVertical: RESPONSIVE.PADDING_XS,
     paddingHorizontal: RESPONSIVE.PADDING_MEDIUM,
   },
@@ -82,82 +68,36 @@ const styles = StyleSheet.create({
     color: "#FF007A",
     fontWeight: "600",
   },
-  passwordSection: {
-    marginTop: RESPONSIVE.MARGIN_MEDIUM,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#D0D0D0",
-    marginVertical: 20,
-    width: "100%",
-  },
-  saveButton: {
-    marginTop: RESPONSIVE.MARGIN_LARGE,
-    marginBottom: RESPONSIVE.MARGIN_MEDIUM,
-    width: "100%",
-    flex: 0,
+  menuContainer: {
+    marginTop: 20,
   },
 });
 
+// Opções do menu
+const menuOptions = [
+  {
+    text: "Detalhes pessoais",
+    icon: require("../../assets/usuario-icon.png"),
+    route: "PersonalDetails",
+  },
+  {
+    text: "Números de telefone",
+    icon: require("../../assets/telefone-icon.png"),
+    route: "PhoneNumbers",
+  },
+  {
+    text: "Senhas e segurança",
+    icon: require("../../assets/cadeado-icon.png"),
+    route: "PasswordSecurity",
+  },
+];
+
 export default function EditDataScreen({ navigation }) {
-  // Estados dos campos do formulário
-  const [formData, setFormData] = useState({
-    email: "usuario@atitus.edu.br",
-    newEmail: "",
-    phone: "(54) 99999-1603",
-    newPhone: "",
-    currentPassword: "senha123456",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  // Estados de edição para cada campo
-  const [editingFields, setEditingFields] = useState({
-    email: false,
-    phone: false,
-    password: false,
-  });
-
   const [profilePhoto, setProfilePhoto] = useState(null);
 
   // Handlers
   const handleBackPress = () => {
     navigation.goBack();
-  };
-
-  const handleSave = () => {
-    // Validações básicas
-    if (!formData.email || !formData.phone) {
-      Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
-      return;
-    }
-
-    // Validação de senha
-    if (editingFields.password && formData.newPassword) {
-      if (formData.newPassword !== formData.confirmPassword) {
-        Alert.alert("Erro", "As senhas não coincidem.");
-        return;
-      }
-      if (!formData.currentPassword) {
-        Alert.alert("Erro", "Digite sua senha atual para alterar a senha.");
-        return;
-      }
-    }
-
-    // Fechar todos os campos de edição
-    setEditingFields({
-      email: false,
-      phone: false,
-      password: false,
-    });
-
-    // TODO: Implementar chamada à API para salvar os dados
-    Alert.alert("Sucesso", "Dados atualizados com sucesso!", [
-      {
-        text: "OK",
-        onPress: () => navigation.goBack(),
-      },
-    ]);
   };
 
   const handlePhotoChange = () => {
@@ -174,58 +114,18 @@ export default function EditDataScreen({ navigation }) {
     );
   };
 
-  const updateField = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleEditField = (field) => {
-    setEditingFields((prev) => ({
-      ...prev,
-      [field]: true,
-    }));
-  };
-
-  const handleFieldBlur = (field) => {
-    // Quando o campo perde o foco, sai do modo de edição
-    setEditingFields((prev) => ({
-      ...prev,
-      [field]: false,
-    }));
-  };
-
-  const maskEmail = (email) => {
-    if (!email) return "";
-    const [localPart, domain] = email.split("@");
-    if (!domain) return email;
-    const maskedLocal = "*".repeat(Math.min(localPart.length, 7));
-    return `${maskedLocal}@${domain}`;
-  };
-
-  const maskPhone = (phone) => {
-    if (!phone) return "";
-    // Formato: (54) *****-1603
-    const cleaned = phone.replace(/\D/g, "");
-    if (cleaned.length < 10) return phone;
-    const areaCode = cleaned.substring(0, 2);
-    const firstPart = cleaned.substring(2, 7);
-    const lastPart = cleaned.substring(7);
-    return `(${areaCode}) ${"*".repeat(firstPart.length)}-${lastPart}`;
-  };
-
-  const maskPassword = (password) => {
-    if (!password) return "";
-    return "*".repeat(Math.min(password.length, 10));
+  const handleMenuPress = (route) => {
+    navigation.navigate(route);
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="light-content" backgroundColor="#3C1342" />
 
-      {/* Header do formulário */}
-      <FormHeader
+      {/* Header padrão do SwapClass */}
+      <AppHeader
+        title="SwapClass"
         onBackPress={handleBackPress}
-        onActionPress={handleSave}
-        actionText="Salvar"
       />
 
       <ScrollView
@@ -235,7 +135,6 @@ export default function EditDataScreen({ navigation }) {
       >
         {/* Seção de Foto de Perfil */}
         <View style={styles.photoSection}>
-          <Text style={styles.sectionTitle}>Foto de perfil</Text>
           <TouchableOpacity
             style={styles.photoContainer}
             onPress={handlePhotoChange}
@@ -245,8 +144,9 @@ export default function EditDataScreen({ navigation }) {
               <Image source={{ uri: profilePhoto }} style={styles.photoImage} />
             ) : (
               <Image
-                source={require("../../assets/user-icon.png")}
+                source={require("../../assets/usuarioCircular-icon.png")}
                 style={styles.photoPlaceholderIcon}
+                tintColor={null}
               />
             )}
           </TouchableOpacity>
@@ -258,115 +158,11 @@ export default function EditDataScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Linha divisória */}
-        <View style={styles.divider} />
-
-        {/* Seção de Informações Pessoais */}
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Informações pessoais</Text>
-
-          <EditableField
-            label="Email universitário"
-            value={formData.email}
-            onChangeText={(value) => updateField("email", value)}
-            onMaskValue={maskEmail}
-            isEditing={editingFields.email}
-            onEditPress={() => handleEditField("email")}
-            onBlur={() => handleFieldBlur("email")}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholder="seu@atitus.edu.br"
-          />
-
-          {/* Campo "Novo email" aparece quando está editando o email */}
-          {editingFields.email && (
-            <LabelledTextInput
-              label="Novo email"
-              value={formData.newEmail}
-              onChangeText={(value) => updateField("newEmail", value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholder="nome.sobrenome@universidade.edu.br"
-            />
-          )}
-
-          {/* Linha divisória entre Email e Telefone */}
-          <View style={styles.divider} />
-
-          <EditableField
-            label="Número de telefone"
-            value={formData.phone}
-            onChangeText={(value) => updateField("phone", value)}
-            onMaskValue={maskPhone}
-            isEditing={editingFields.phone}
-            onEditPress={() => handleEditField("phone")}
-            onBlur={() => handleFieldBlur("phone")}
-            keyboardType="phone-pad"
-            placeholder="(00) 00000-0000"
-          />
-
-          {/* Campo "Novo número de telefone" aparece quando está editando o telefone */}
-          {editingFields.phone && (
-            <LabelledTextInput
-              label="Novo número de telefone"
-              value={formData.newPhone}
-              onChangeText={(value) => updateField("newPhone", value)}
-              keyboardType="phone-pad"
-              placeholder="Número de celular"
-            />
-          )}
+        {/* Menu de Opções */}
+        <View style={styles.menuContainer}>
+          <MenuGroup items={menuOptions} onItemPress={handleMenuPress} />
         </View>
-
-        {/* Linha divisória */}
-        <View style={styles.divider} />
-
-        {/* Seção de Senha */}
-        <View style={styles.passwordSection}>
-          <Text style={styles.sectionTitle}>Alteração de senha</Text>
-
-          <EditableField
-            label="Senha atual"
-            value={formData.currentPassword}
-            onChangeText={(value) => updateField("currentPassword", value)}
-            onMaskValue={maskPassword}
-            isEditing={editingFields.password}
-            onEditPress={() => handleEditField("password")}
-            onBlur={() => handleFieldBlur("password")}
-            secureTextEntry
-            placeholder="Digite sua senha atual"
-          />
-
-          {/* Campos "Nova senha" e "Confirmar senha" aparecem quando está editando a senha */}
-          {editingFields.password && (
-            <>
-              <LabelledTextInput
-                label="Nova senha"
-                value={formData.newPassword}
-                onChangeText={(value) => updateField("newPassword", value)}
-                secureTextEntry
-                placeholder="Digite sua nova senha"
-              />
-
-              <LabelledTextInput
-                label="Confirmar senha"
-                value={formData.confirmPassword}
-                onChangeText={(value) => updateField("confirmPassword", value)}
-                secureTextEntry
-                placeholder="Confirme sua nova senha"
-              />
-            </>
-          )}
-        </View>
-
-        {/* Botão de Salvar */}
-        <PrimaryButton
-          title="SALVAR ALTERAÇÕES"
-          onPress={handleSave}
-          variant="secondary"
-          style={styles.saveButton}
-        />
       </ScrollView>
     </View>
   );
 }
-

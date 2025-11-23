@@ -48,9 +48,12 @@ export default function FormHeader({ onBackPress, onActionPress, actionText }) {
           style={styles.backIcon}
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.actionButton} onPress={onActionPress}>
-        <Text style={styles.actionText}>{actionText}</Text>
-      </TouchableOpacity>
+      {actionText && (
+        <TouchableOpacity style={styles.actionButton} onPress={onActionPress}>
+          <Text style={styles.actionText}>{actionText}</Text>
+        </TouchableOpacity>
+      )}
+      {!actionText && <View style={{ width: 60 }} />}
     </View>
   );
 }

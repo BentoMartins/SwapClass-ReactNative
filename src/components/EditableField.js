@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-nativ
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   label: {
     fontSize: 16,
@@ -12,11 +12,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fieldRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    width: "100%",
   },
   textInput: {
-    flex: 1,
+    width: "100%",
     borderWidth: 2,
     borderColor: "#000",
     borderLeftWidth: 6,
@@ -28,7 +27,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   maskedInput: {
-    flex: 1,
+    width: "100%",
     borderWidth: 2,
     borderColor: "#000",
     borderLeftWidth: 6,
@@ -41,9 +40,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   changeButton: {
-    paddingHorizontal: 12,
+    alignSelf: "flex-end",
     paddingVertical: 8,
-    marginLeft: 10,
+    marginTop: 8,
   },
   changeButtonText: {
     color: "#FF007A",

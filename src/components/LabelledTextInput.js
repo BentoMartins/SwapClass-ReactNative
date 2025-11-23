@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   inputLabel: {
     fontSize: 16,

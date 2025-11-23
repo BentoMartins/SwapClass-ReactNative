@@ -10,6 +10,10 @@ import {
   Image,
   Modal,
   Animated,
+  Linking,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 
 // Componentes Genéricos
@@ -69,6 +73,70 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalInput: {
+    borderWidth: 2,
+    borderColor: "#000",
+    borderLeftWidth: 6,
+    borderBottomWidth: 6,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalButtonCancel: {
+    backgroundColor: "#E0E0E0",
+    borderWidth: 2,
+    borderColor: "#000",
+  },
+  modalButtonConfirm: {
+    backgroundColor: "#FF007A",
+    borderWidth: 2,
+    borderColor: "#000",
+    borderLeftWidth: 6,
+    borderBottomWidth: 6,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalButtonTextCancel: {
+    color: "#000",
+  },
+  modalButtonTextConfirm: {
+    color: "#FFFFFF",
+  },
 });
 
 export default function SellScreen({ navigation }) {
@@ -78,9 +146,15 @@ export default function SellScreen({ navigation }) {
     category: "",
     condition: "",
     description: "",
+    location: "",
+    university: "",
   });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showUniversityModal, setShowUniversityModal] = useState(false);
+  const [locationInput, setLocationInput] = useState("");
+  const [universityInput, setUniversityInput] = useState("");
 
   // Animações para os modais (Mantidas localmente, mas a lógica de useEffect foi movida para o ActionSheetModal)
   const slideAnim = useRef(new Animated.Value(300)).current;
@@ -108,6 +182,59 @@ export default function SellScreen({ navigation }) {
   const handleConditionSelect = (condition) => {
     setFormData((prev) => ({ ...prev, condition: condition }));
     setShowConditionModal(false);
+  };
+
+  const handleOptionPress = (optionText) => {
+    if (optionText === "Localização") {
+      setLocationInput(formData.location || "");
+      setShowLocationModal(true);
+    } else if (optionText === "Universidade") {
+      setUniversityInput(formData.university || "");
+      setShowUniversityModal(true);
+    }
+  };
+
+  const handleLocationSelect = async () => {
+    if (locationInput.trim()) {
+      // Salvar o endereço
+      setFormData((prev) => ({ ...prev, location: locationInput.trim() }));
+      setShowLocationModal(false);
+      
+      // Abrir Google Maps para seleção/visualização
+      await openGoogleMaps();
+    } else {
+      Alert.alert("Erro", "Por favor, digite um endereço.");
+    }
+  };
+
+  const openGoogleMaps = async () => {
+    const searchQuery = locationInput.trim();
+    const url = Platform.select({
+      ios: `maps://app?q=${encodeURIComponent(searchQuery)}`,
+      android: `geo:0,0?q=${encodeURIComponent(searchQuery)}`,
+    });
+
+    try {
+      const supported = await Linking.canOpenURL(url || "");
+      if (supported && url) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback para Google Maps web
+        const webUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
+        await Linking.openURL(webUrl);
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível abrir o Google Maps.");
+    }
+  };
+
+  const handleUniversitySave = () => {
+    if (universityInput.trim()) {
+      setFormData((prev) => ({ ...prev, university: universityInput.trim() }));
+      setShowUniversityModal(false);
+    } else {
+      Alert.alert("Erro", "Por favor, digite o nome da universidade.");
+    }
   };
 
   return (
@@ -187,8 +314,12 @@ export default function SellScreen({ navigation }) {
         {/* 5. Componente Genérico de Grupo de Opções */}
         <OptionGroup
           options={optionalOptions}
-          onOptionPress={(text) => console.log(`Opção pressionada: ${text}`)}
+          onOptionPress={handleOptionPress}
           plusIcon={require("../../assets/mais-icon.png")}
+          values={{
+            "Localização": formData.location,
+            "Universidade": formData.university,
+          }}
         />
       </ScrollView>
 
@@ -211,6 +342,106 @@ export default function SellScreen({ navigation }) {
         onItemSelected={handleConditionSelect}
         slideAnim={conditionSlideAnim} // Passa a animação
       />
+
+      {/* Modal de Localização */}
+      <Modal
+        visible={showLocationModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={() => setShowLocationModal(false)}
+          >
+            <View style={{ flex: 1 }} />
+          </TouchableOpacity>
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.modalTitle}>Selecionar Localização</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Digite o endereço ou localização"
+              value={locationInput}
+              onChangeText={setLocationInput}
+              placeholderTextColor="#999"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => setShowLocationModal(false)}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextCancel]}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonConfirm]}
+                onPress={handleLocationSelect}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextConfirm]}>
+                  Abrir Maps
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Modal de Universidade */}
+      <Modal
+        visible={showUniversityModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowUniversityModal(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={() => setShowUniversityModal(false)}
+          >
+            <View style={{ flex: 1 }} />
+          </TouchableOpacity>
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.modalTitle}>Nome da Universidade</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Digite o nome da sua universidade"
+              value={universityInput}
+              onChangeText={setUniversityInput}
+              placeholderTextColor="#999"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => setShowUniversityModal(false)}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextCancel]}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonConfirm]}
+                onPress={handleUniversitySave}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextConfirm]}>
+                  Salvar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }

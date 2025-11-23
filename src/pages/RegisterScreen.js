@@ -6,7 +6,9 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RESPONSIVE, isTablet } from "../utils/responsive";
 
 // Componentes Genéricos
@@ -67,9 +69,23 @@ const styles = StyleSheet.create({
   halfInput: {
     flex: 1,
   },
+  backButton: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 10,
+    padding: 30,
+    paddingTop: 20,
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#FF007A",
+  },
 });
 
 export default function RegisterScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -137,6 +153,17 @@ export default function RegisterScreen({ navigation }) {
 
       {/* 1. Componente Genérico DecorativeBackground (Reutilizado) */}
       <DecorativeBackground images={decorativeImages} />
+
+      {/* Botão de Voltar */}
+      <TouchableOpacity
+        style={[styles.backButton, { top: Math.max(insets.top, 10) }]}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          source={require("../../assets/voltar-icon.png")}
+          style={styles.backIcon}
+        />
+      </TouchableOpacity>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* 2. Componente Genérico de Título e Subtítulo */}

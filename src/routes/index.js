@@ -18,6 +18,9 @@ import FavoritesScreen from '../pages/FavoritesScreen';
 import FAQScreen from '../pages/FAQScreen';
 import SupportScreen from '../pages/SupportScreen';
 import EditDataScreen from '../pages/EditDataScreen';
+import PersonalDetailsScreen from '../pages/PersonalDetailsScreen';
+import PhoneNumbersScreen from '../pages/PhoneNumbersScreen';
+import PasswordSecurityScreen from '../pages/PasswordSecurityScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -123,6 +126,27 @@ export default function MainNavigator() {
         <Stack.Screen 
           name="EditData" 
           component={EditDataScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela PersonalDetails */}
+        <Stack.Screen 
+          name="PersonalDetails" 
+          component={PersonalDetailsScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela PhoneNumbers */}
+        <Stack.Screen 
+          name="PhoneNumbers" 
+          component={PhoneNumbersScreen}
+          options={{ headerShown: false }}
+        />
+
+        {/* Tela PasswordSecurity */}
+        <Stack.Screen 
+          name="PasswordSecurity" 
+          component={PasswordSecurityScreen}
           options={{ headerShown: false }}
         />
 
