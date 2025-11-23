@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { RESPONSIVE, isTablet, isLargeScreen } from "../utils/responsive";
-import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 
 // Importação dos novos componentes genéricos
 import DecorativeBackground from "../components/DecorativeBackground";
@@ -65,49 +65,22 @@ const styles = StyleSheet.create({
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { signin, loading } = useAuth();
 
-  //login function (Lógica de Negócio Mantida)
+  //login function usando o contexto de autenticação
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Erro", "Preencha todos os campos de email e senha.");
       return;
     }
 
-    setIsLoading(true);
+    const result = await signin(email, password);
 
-    try {
-      const userResponse = await axios.get("https://fakestoreapi.com/users");
-      const users = await userResponse.data;
-
-      const userExists = users.find((user) => user.email === email);
-
-      if (!userExists) {
-        throw new Error("Usuário não encontrado.");
-      }
-
-      await axios.post("https://fakestoreapi.com/auth/login", {
-        username: userExists.username,
-        password: password,
-      });
-
+    if (result.success) {
       Alert.alert("Sucesso", "Login realizado com sucesso!");
       navigation.replace("Home");
-    } catch (error) {
-      let errorMessage = "Ocorreu um erro. Tente novamente.";
-
-      if (error.response && error.response.data) {
-        errorMessage = error.response.data;
-      } else if (error.request) {
-        errorMessage =
-          "Não foi possível conectar ao servidor. Verifique sua internet.";
-      } else {
-        errorMessage = error.message;
-      }
-
-      Alert.alert("Erro no Login", errorMessage);
-    } finally {
-      setIsLoading(false);
+    } else {
+      Alert.alert("Erro no Login", result.error || "Ocorreu um erro. Tente novamente.");
     }
   };
 
@@ -160,7 +133,7 @@ export default function LoginScreen({ navigation }) {
         <ActionButton
           title="LOGIN"
           onPress={handleLogin}
-          isLoading={isLoading}
+          isLoading={loading}
           backgroundColor="#FF007A" // Cor de fundo específica
           textColor="#fff"
         />

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, StatusBar, ScrollView } from "react-native";
+import { useAuth } from "../contexts/AuthContext";
 
 // Componentes Genéricos
 import ProfileHeader from "../components/ProfileHeader";
@@ -88,8 +89,10 @@ const styles = StyleSheet.create({
 
 export default function UserProfileScreen({ navigation }) {
   const [activeTab, setActiveTab] = React.useState("profile");
+  const { signout, user } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signout();
     navigation.navigate("Welcome");
   };
 
@@ -106,8 +109,8 @@ export default function UserProfileScreen({ navigation }) {
       <ProfileHeader />
 
       <UserCard
-        userName="NOME DO USUÁRIO"
-        userEmail="E-mail do usuário"
+        userName={user?.name?.toUpperCase() || "NOME DO USUÁRIO"}
+        userEmail={user?.email || "E-mail do usuário"}
         avatarIcon={require("../../assets/user-icon.png")}
         decorativeIcon={require("../../assets/estrelaRosa-icon.png")}
       />

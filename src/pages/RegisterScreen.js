@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RESPONSIVE, isTablet } from "../utils/responsive";
+import { useAuth } from "../contexts/AuthContext";
 
 // Componentes Genéricos
 import DecorativeBackground from "../components/DecorativeBackground"; // Reutilizado do Login
@@ -86,11 +87,11 @@ const styles = StyleSheet.create({
 
 export default function RegisterScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { signup, loading } = useAuth();
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
     email: "",
-    celular: "",
     senha: "",
     confirmarSenha: "",
   });
@@ -107,13 +108,14 @@ export default function RegisterScreen({ navigation }) {
     return (
       formData.nome.trim() !== "" &&
       formData.sobrenome.trim() !== "" &&
-      // ... (restante da validação)
+      formData.email.trim() !== "" &&
+      formData.senha.trim() !== "" &&
       formData.confirmarSenha.trim() !== "" &&
       aceitaTermos
     );
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!aceitaTermos) {
       Alert.alert(
         "Erro",
@@ -131,16 +133,24 @@ export default function RegisterScreen({ navigation }) {
       !formData.nome ||
       !formData.sobrenome ||
       !formData.email ||
-      !formData.celular ||
       !formData.senha
     ) {
       Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
       return;
     }
 
-    // Lógica de registro
-    console.log("Dados do registro:", formData);
-    navigation.navigate("Success");
+    // Combina nome e sobrenome para enviar como "name"
+    const fullName = `${formData.nome} ${formData.sobrenome}`.trim();
+
+    // Envia apenas name, email e password para o microserviço
+    const result = await signup(fullName, formData.email, formData.senha);
+
+    if (result.success) {
+      Alert.alert("Sucesso", "Conta criada com sucesso!");
+      navigation.navigate("Success");
+    } else {
+      Alert.alert("Erro no Cadastro", result.error || "Ocorreu um erro. Tente novamente.");
+    }
   };
 
   return (
@@ -201,14 +211,6 @@ export default function RegisterScreen({ navigation }) {
             autoCapitalize="none"
           />
 
-          {/* Número de Celular */}
-          <InputWithShadow
-            placeholder="Número de Celular"
-            value={formData.celular}
-            onChangeText={(value) => handleInputChange("celular", value)}
-            keyboardType="phone-pad"
-          />
-
           {/* Senha */}
           <InputWithShadow
             placeholder="Senha"
@@ -242,9 +244,9 @@ export default function RegisterScreen({ navigation }) {
 
         {/* 4. Componente Genérico de Botão de Ação do Formulário */}
         <ActionFormButton
-          title="REGISTRAR"
+          title={loading ? "REGISTRANDO..." : "REGISTRAR"}
           onPress={handleRegister}
-          isActive={isFormValid()}
+          isActive={isFormValid() && !loading}
           activeColor="#3C1342"
           inactiveColor="#5D5D5D"
           style={{ marginTop: -25 }} // Ajuste de margem específico da tela
