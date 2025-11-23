@@ -78,15 +78,41 @@ const productService = {
   },
 
   /**
-   * Busca produtos por termo de pesquisa
-   * @param {string} searchInput - Termo de busca
+   * Busca produtos por termo de pesquisa (busca pela brand)
+   * @param {string} searchInput - Termo de busca (busca na brand do produto)
    * @param {string} currency - Moeda para buscar produtos
    * @returns {Promise<Array>} Lista de produtos encontrados
    */
   searchProducts: async (searchInput, currency = 'BRL') => {
     try {
-      const response = await api.get(`products/search/${searchInput}/${currency}`);
-      return response.data;
+      // Busca todos os produtos e filtra pela brand
+      const token = await authService.getToken();
+      const response = await api.get(`products/${currency}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          size: 100, // Buscar mais produtos para filtrar
+          page: 0,
+        },
+      });
+
+      const allProducts = response.data.content || response.data || [];
+      
+      // Filtrar produtos pela brand (case-insensitive)
+      const searchTerm = searchInput.trim().toLowerCase();
+      const filteredProducts = allProducts.filter((product) => {
+        const brand = (product.brand || '').toLowerCase();
+        const model = (product.model || '').toLowerCase();
+        const description = (product.description || '').toLowerCase();
+        
+        // Busca na brand, model ou description
+        return brand.includes(searchTerm) || 
+               model.includes(searchTerm) || 
+               description.includes(searchTerm);
+      });
+
+      return filteredProducts;
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar produtos');
@@ -112,9 +138,34 @@ const productService = {
         throw new Error('Token de autenticação não encontrado');
       }
 
-      const response = await api.post('/ws/products', productData, {
+      // Garantir que o preço é um número decimal válido
+      const dataToSend = {
+        ...productData,
+        price: typeof productData.price === 'string' 
+          ? parseFloat(productData.price.replace(',', '.')) 
+          : typeof productData.price === 'number'
+          ? parseFloat(productData.price.toFixed(2))
+          : productData.price,
+      };
+
+      // Validar campos obrigatórios
+      if (!dataToSend.brand || !dataToSend.model || !dataToSend.currency || !dataToSend.price) {
+        throw new Error('Campos obrigatórios faltando: brand, model, currency e price são obrigatórios');
+      }
+
+      // Validar que o preço é um número válido
+      if (isNaN(dataToSend.price) || dataToSend.price <= 0) {
+        throw new Error('Preço deve ser um número maior que zero');
+      }
+
+      // Log para debug (remover em produção)
+      console.log('Enviando dados para API:', JSON.stringify(dataToSend, null, 2));
+      console.log('Token presente:', !!token);
+
+      const response = await api.post('/ws/products', dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -124,9 +175,19 @@ const productService = {
       };
     } catch (error) {
       console.error('Erro ao criar produto:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      console.error('Request data:', error.config?.data);
+      
+      // Mensagem de erro mais detalhada
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data?.error 
+        || error.message 
+        || 'Erro ao criar produto';
+      
       return {
         product: null,
-        error: error.response?.data?.message || error.message || 'Erro ao criar produto',
+        error: errorMessage,
       };
     }
   },

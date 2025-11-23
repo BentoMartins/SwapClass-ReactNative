@@ -23,6 +23,7 @@ import LocationSection from "../components/LocationSection";
 import UniversitySection from "../components/UniversitySection";
 import DataLoadingState from "../components/DataLoadingState";
 import ActionSheetModal from "../components/ActionSheetModal";
+import ShadowButton from "../components/ShadowButton";
 
 // Estilos específicos da tela
 const styles = StyleSheet.create({
@@ -262,6 +263,52 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   };
 
+  // Função para deletar produto
+  const handleDeleteProduct = () => {
+    if (!productId) {
+      Alert.alert("Erro", "ID do produto não encontrado.");
+      return;
+    }
+
+    Alert.alert(
+      "Deletar Anúncio",
+      "Tem certeza que deseja deletar este anúncio? Esta ação não pode ser desfeita.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Deletar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const result = await productService.deleteProduct(productId);
+              
+              if (result.success) {
+                Alert.alert(
+                  "Sucesso",
+                  "Anúncio deletado com sucesso!",
+                  [
+                    {
+                      text: "OK",
+                      onPress: () => navigation.goBack(),
+                    },
+                  ]
+                );
+              } else {
+                Alert.alert("Erro", result.error || "Não foi possível deletar o anúncio.");
+              }
+            } catch (error) {
+              console.error("Erro ao deletar produto:", error);
+              Alert.alert("Erro", "Ocorreu um erro ao deletar o anúncio. Tente novamente.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // Renderização principal com os detalhes do produto
   return (
     <View style={styles.container}>
@@ -305,14 +352,33 @@ export default function ProductDetailScreen({ route, navigation }) {
 
         {/* Seção de localização */}
         <LocationSection
-          mapImageUri={require("../../assets/imagem-capa.png")} // Placeholder - substituir com imagem real do mapa
+          mapImageUri={null} // Imagem removida
           location={mockData.location}
         />
 
         {/* Seção de universidade */}
         <UniversitySection
-          universityImageUri={require("../../assets/escola-icon.png")} // Placeholder - substituir com imagem real da universidade
+          universityImageUri={null} // Imagem removida
           universityName={mockData.universityName}
+        />
+
+        {/* Botão de Deletar Anúncio */}
+        <ShadowButton
+          title="DELETAR ANÚNCIO"
+          onPress={handleDeleteProduct}
+          backgroundColor="#FF0000"
+          textColor="#FFFFFF"
+          style={{ 
+            marginTop: RESPONSIVE.MARGIN_MEDIUM, 
+            marginBottom: RESPONSIVE.MARGIN_LARGE, 
+            marginHorizontal: RESPONSIVE.PADDING_LARGE || 40,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            minHeight: 35,
+            alignSelf: "center",
+            width: "60%",
+          }}
+          textStyle={{ fontSize: 12 }}
         />
       </ScrollView>
 

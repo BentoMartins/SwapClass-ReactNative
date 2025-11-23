@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  RefreshControl,
 } from "react-native";
 import { RESPONSIVE, getColumns } from "../utils/responsive";
 import { navigateToFavorites } from "../utils/navigationHelpers";
@@ -41,8 +42,12 @@ const styles = StyleSheet.create({
   },
   productsGrid: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
+  },
+  productsScrollView: {
+    marginVertical: 10,
+  },
+  productsScrollContent: {
+    paddingRight: 15, // Padding no final do scroll
   },
 });
 
@@ -52,6 +57,7 @@ export default function HomeScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("home");
+  const [refreshing, setRefreshing] = useState(false);
 
   // Esta lógica de categorias e filtros não está sendo usada no corpo do 'return',
   // mas é mantida aqui caso seja para uma seção futura da Home.
@@ -62,28 +68,40 @@ export default function HomeScreen({ navigation }) {
     // ... Lógica de fetchCategories (mantida para reuso futuro)
   }, []);
 
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const productsData = await productService.getProducts(currency, 0, 20);
+      // A API pode retornar um array diretamente ou dentro de content
+      const productsList = Array.isArray(productsData) 
+        ? productsData 
+        : productsData?.content || productsData?.products || [];
+      setProducts(productsList);
+    } catch (err) {
+      console.error("Erro ao buscar produtos:", err);
+      setError(err.message || "Erro ao carregar produtos");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const productsData = await productService.getProducts(currency, 0, 20);
-        // A API pode retornar um array diretamente ou dentro de content
-        const productsList = Array.isArray(productsData) 
-          ? productsData 
-          : productsData?.content || productsData?.products || [];
-        setProducts(productsList);
-      } catch (err) {
-        console.error("Erro ao buscar produtos:", err);
-        setError(err.message || "Erro ao carregar produtos");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProducts();
   }, [selectedCategory, currency]);
+
+  // Função de refresh (pull to refresh)
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchProducts();
+    } catch (err) {
+      console.error("Erro ao atualizar produtos:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
@@ -140,7 +158,17 @@ export default function HomeScreen({ navigation }) {
         showBackButton={false}
       />
 
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#FF007A"]} // Android - Rosa
+            tintColor="#FF007A" // iOS - Rosa
+          />
+        }
+      >
         {/* Seção "Do seu interesse" */}
         <View style={styles.section}>
           {/* 2. Componente Genérico de Header de Seção */}
@@ -151,7 +179,12 @@ export default function HomeScreen({ navigation }) {
               <ActivityIndicator size="large" color="#3C1342" />
             </View>
           ) : (
-            <View style={styles.productsGrid}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.productsScrollView}
+              contentContainerStyle={styles.productsScrollContent}
+            >
               {products.slice(0, 6).map((item) => (
                 // 3. Componente Genérico de Card de Produto
                 <ProductCard
@@ -170,7 +203,7 @@ export default function HomeScreen({ navigation }) {
                   }
                 />
               ))}
-            </View>
+            </ScrollView>
           )}
         </View>
 
@@ -179,7 +212,12 @@ export default function HomeScreen({ navigation }) {
           {/* 2. Componente Genérico de Header de Seção */}
           <SectionHeader title="Tudo até R$100!" emojis="💰💵" />
 
-            <View style={styles.productsGrid}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.productsScrollView}
+              contentContainerStyle={styles.productsScrollContent}
+            >
             {products
               .filter((item) => {
                 // Considera conversão de moeda se necessário
@@ -193,9 +231,9 @@ export default function HomeScreen({ navigation }) {
                   key={item.id}
                   product={{
                     id: item.id,
-                    imageUri: item.image,
-                    price: formatPrice(item.price),
-                    title: item.title,
+                    imageUri: item.imageUrl || item.image,
+                    price: formatPrice(item.price, item.currency),
+                    title: item.brand || item.model || item.title || "Produto",
                   }}
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
@@ -205,7 +243,7 @@ export default function HomeScreen({ navigation }) {
                   }
                 />
               ))}
-          </View>
+          </ScrollView>
         </View>
 
         {/* Seção "Para melhorar seu jeito de estudar" */}
@@ -214,7 +252,12 @@ export default function HomeScreen({ navigation }) {
           <SectionHeader title="Para melhorar seu jeito de 
           estudar 📚" emojis="" />
 
-          <View style={styles.productsGrid}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.productsScrollView}
+            contentContainerStyle={styles.productsScrollContent}
+          >
             {products
               .slice(6, 12)
               .map((item) => (
@@ -223,9 +266,9 @@ export default function HomeScreen({ navigation }) {
                   key={item.id}
                   product={{
                     id: item.id,
-                    imageUri: item.image,
-                    price: formatPrice(item.price),
-                    title: item.title,
+                    imageUri: item.imageUrl || item.image,
+                    price: formatPrice(item.price, item.currency),
+                    title: item.brand || item.model || item.title || "Produto",
                   }}
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
@@ -235,7 +278,7 @@ export default function HomeScreen({ navigation }) {
                   }
                 />
               ))}
-          </View>
+          </ScrollView>
         </View>
       </ScrollView>
 

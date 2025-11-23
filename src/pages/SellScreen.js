@@ -6,7 +6,11 @@ import {
   StatusBar,
   Alert,
   Animated,
+  Image,
+  TouchableOpacity,
+  Platform,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 // Componentes Genéricos
 import FormHeader from "../components/FormHeader";
@@ -17,6 +21,7 @@ import ActionSheetModal from "../components/ActionSheetModal";
 
 // Services e Contexts
 import productService from "../services/product";
+import { uploadImage } from "../services/cloudinary";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 // Moedas disponíveis
@@ -51,6 +56,37 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
   },
+  imageContainer: {
+    width: "100%",
+    height: 200,
+    marginBottom: 10,
+    position: "relative",
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#000",
+    borderLeftWidth: 6,
+    borderBottomWidth: 6,
+  },
+  selectedImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 1,
+  },
+  removeImageIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "#FFFFFF",
+  },
 });
 
 export default function SellScreen({ navigation }) {
@@ -66,6 +102,7 @@ export default function SellScreen({ navigation }) {
   
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [image, setImage] = useState(null);
   
   // Animação para o modal de moeda
   const currencySlideAnim = useRef(new Animated.Value(300)).current;
@@ -88,6 +125,65 @@ export default function SellScreen({ navigation }) {
   const handleCurrencySelect = (selectedCurrency) => {
     setFormData((prev) => ({ ...prev, currency: selectedCurrency }));
     setShowCurrencyModal(false);
+  };
+
+  // Solicita permissão para acessar a câmera
+  const requestCameraPermissions = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permissão negada!",
+        "Você precisa permitir acesso à câmera."
+      );
+      return false;
+    }
+    return true;
+  };
+
+  // Seleciona imagem da galeria
+  const pickImageFromGallery = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3], // Proporção 4:3 para melhor ajuste
+      quality: 0.7, // Qualidade reduzida para menor tamanho
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
+  // Tira foto com a câmera
+  const takePhotoWithCamera = async () => {
+    const hasPermission = await requestCameraPermissions();
+    if (!hasPermission) return;
+
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3], // Proporção 4:3 para melhor ajuste
+      quality: 0.7, // Qualidade reduzida para menor tamanho
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0]);
+    }
+  };
+
+  // Handler para o placeholder de upload de imagem
+  const handleImageUploadPress = () => {
+    Alert.alert(
+      "Adicionar foto",
+      "Escolha uma opção",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Câmera", onPress: takePhotoWithCamera },
+        { text: "Galeria", onPress: pickImageFromGallery },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handlePublish = async () => {
@@ -121,23 +217,52 @@ export default function SellScreen({ navigation }) {
       return;
     }
 
-    // Preparar dados para envio
-    const productData = {
-      brand: formData.title.trim(), // title é enviado como brand
-      model: formData.model.trim(),
-      description: formData.description.trim() || "", // Opcional, mas enviado vazio se não preenchido
-      currency: formData.currency,
-      price: numericPrice,
-      imageUrl: "http://placeholder-image.com/image.jpg", // Valor placeholder para aceitar a requisição
-    };
-
     setIsSubmitting(true);
 
     try {
+      // Upload da imagem para Cloudinary (se houver)
+      let imageUrl = null;
+
+      if (image) {
+        if (!image.base64) {
+          // Se a imagem já é uma URL (não tem base64), usa diretamente
+          imageUrl = image.uri;
+        } else {
+          // Faz upload da imagem para Cloudinary
+          const uploadResult = await uploadImage(image);
+          
+          if (uploadResult.error) {
+            Alert.alert("Erro", `Erro ao fazer upload da imagem: ${uploadResult.error}`);
+            setIsSubmitting(false);
+            return;
+          }
+          
+          imageUrl = uploadResult.imageUrl;
+        }
+      }
+
+      // Preparar dados para envio
+      const productData = {
+        brand: formData.title.trim(), // title é enviado como brand
+        model: formData.model.trim(),
+        description: formData.description.trim() || "", // Opcional, mas enviado vazio se não preenchido
+        currency: formData.currency,
+        price: parseFloat(numericPrice.toFixed(2)), // Garantir que seja número decimal com 2 casas
+        imageUrl: imageUrl || "http://placeholder-image.com/image.jpg", // URL do Cloudinary ou placeholder
+      };
+
+      // Log para debug (remover em produção)
+      console.log("Dados do produto a serem enviados:", JSON.stringify(productData, null, 2));
+
       const result = await productService.createProduct(productData);
 
       if (result.error) {
-        Alert.alert("Erro", result.error);
+        console.error("Erro detalhado:", result.error);
+        Alert.alert(
+          "Erro ao Publicar",
+          result.error || "Não foi possível publicar o produto. Verifique os dados e tente novamente."
+        );
+        setIsSubmitting(false);
         return;
       }
 
@@ -180,12 +305,32 @@ export default function SellScreen({ navigation }) {
         contentContainerStyle={styles.contentContainer}
       >
         {/* Upload de Imagem */}
-        <ImageUploadPlaceholder
-          maxPhotos={10}
-          uploadIcon={require("../../assets/enviarFoto-icon.png")}
-          starIcon={require("../../assets/estrelaAmarela-icon.png")}
-          tapeIcon={require("../../assets/fita-icon.png")}
-        />
+        <TouchableOpacity onPress={handleImageUploadPress} activeOpacity={0.8}>
+          {image ? (
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: image.uri }}
+                style={styles.selectedImage}
+              />
+              <TouchableOpacity
+                style={styles.removeImageButton}
+                onPress={() => setImage(null)}
+              >
+                <Image
+                  source={require("../../assets/x-icon.png")}
+                  style={styles.removeImageIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <ImageUploadPlaceholder
+              maxPhotos={10}
+              uploadIcon={require("../../assets/enviarFoto-icon.png")}
+              starIcon={require("../../assets/estrelaAmarela-icon.png")}
+              tapeIcon={require("../../assets/fita-icon.png")}
+            />
+          )}
+        </TouchableOpacity>
 
         {/* Form Fields */}
         <View style={styles.formSection}>

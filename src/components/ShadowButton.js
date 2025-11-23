@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   baseText: {
-    fontSize: RESPONSIVE.BODY_MEDIUM, // Tamanho base
+    fontSize: RESPONSIVE.BODY_SMALL || 12, // Tamanho menor
     fontWeight: "600",
     textAlign: "center",
   },
@@ -41,6 +41,7 @@ export default function ShadowButton({
   backgroundColor,
   textColor = "#fff",
   style,
+  textStyle,
 }) {
   return (
     <TouchableOpacity
@@ -48,7 +49,7 @@ export default function ShadowButton({
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={[styles.baseText, { color: textColor }]}>{title}</Text>
+      <Text style={[styles.baseText, { color: textColor }, textStyle]}>{title}</Text>
     </TouchableOpacity>
   );
 }
