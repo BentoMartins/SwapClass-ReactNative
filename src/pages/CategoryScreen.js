@@ -74,6 +74,7 @@ const navItems = [
   {
     name: "profile",
     icon: require("../../assets/conta-icon.png"),
+    activeIcon: require("../../assets/contaPreenchida-icon.png"),
     navigateTo: "UserProfile",
   },
 ];

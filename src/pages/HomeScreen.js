@@ -120,6 +120,7 @@ export default function HomeScreen({ navigation }) {
     {
       name: "profile",
       icon: require("../../assets/conta-icon.png"),
+      activeIcon: require("../../assets/contaPreenchida-icon.png"),
       navigateTo: "UserProfile",
     },
   ];
@@ -179,6 +180,36 @@ export default function HomeScreen({ navigation }) {
             {products
               .filter((item) => item.price <= 100)
               .slice(0, 6)
+              .map((item) => (
+                // 3. Componente Genérico de Card de Produto
+                <ProductCard
+                  key={item.id}
+                  product={{
+                    id: item.id,
+                    imageUri: item.image,
+                    price: formatPrice(item.price),
+                    title: item.title,
+                  }}
+                  onPress={() =>
+                    navigation.navigate("ProductDetail", { productId: item.id })
+                  }
+                  onFavoritePress={() =>
+                    console.log(`Favoritar item ${item.id}`)
+                  }
+                />
+              ))}
+          </View>
+        </View>
+
+        {/* Seção "Para melhorar seu jeito de estudar" */}
+        <View style={styles.section}>
+          {/* 2. Componente Genérico de Header de Seção */}
+          <SectionHeader title="Para melhorar seu jeito de 
+          estudar 📚" emojis="" />
+
+          <View style={styles.productsGrid}>
+            {products
+              .slice(6, 12)
               .map((item) => (
                 // 3. Componente Genérico de Card de Produto
                 <ProductCard

@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
   navIconActive: {
     width: 27, // Mantido o mesmo tamanho do ícone inativo
     height: 26,
-    tintColor: "#FFFFFF", // Cor do ícone ativo
+    // Não aplica tintColor quando há activeIcon, para manter a cor original do ícone
   },
 });
 
