@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import IconNavItem from "./IconNavItem"; // Importa o componente filho
 
 const styles = StyleSheet.create({
@@ -27,8 +28,10 @@ export default function BottomNavigationBar({
   setActiveTab,
   onNavigate,
 }) {
+  const insets = useSafeAreaInsets();
+  
   return (
-    <View style={styles.bottomNavigation}>
+    <View style={[styles.bottomNavigation, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {items.map((item) => (
         <IconNavItem
           key={item.name}
