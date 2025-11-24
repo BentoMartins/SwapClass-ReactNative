@@ -24,6 +24,9 @@ import productService from "../services/product";
 import { uploadImage } from "../services/cloudinary";
 import { useCurrency } from "../contexts/CurrencyContext";
 
+// Constantes
+import { CATEGORIES, CONDITIONS, getCategoryName, getConditionName } from "../utils/constants";
+
 // Moedas disponíveis
 const currencies = ["BRL", "USD", "EUR"];
 
@@ -98,14 +101,20 @@ export default function SellScreen({ navigation }) {
     price: "",
     description: "",
     currency: currency, // Inicializa com a moeda do contexto
+    category: "", // Nova: categoria do produto
+    condition: "", // Nova: condição do produto
   });
   
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showConditionModal, setShowConditionModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [image, setImage] = useState(null);
   
-  // Animação para o modal de moeda
+  // Animações para os modais
   const currencySlideAnim = useRef(new Animated.Value(300)).current;
+  const categorySlideAnim = useRef(new Animated.Value(300)).current;
+  const conditionSlideAnim = useRef(new Animated.Value(300)).current;
 
   // Sincroniza a moeda do formulário com a moeda do contexto
   useEffect(() => {
@@ -125,6 +134,24 @@ export default function SellScreen({ navigation }) {
   const handleCurrencySelect = (selectedCurrency) => {
     setFormData((prev) => ({ ...prev, currency: selectedCurrency }));
     setShowCurrencyModal(false);
+  };
+
+  // Nova: Handler para seleção de categoria
+  const handleCategorySelect = (categoryName) => {
+    const selectedCategory = CATEGORIES.find((cat) => cat.name === categoryName);
+    if (selectedCategory) {
+      setFormData((prev) => ({ ...prev, category: selectedCategory.value }));
+    }
+    setShowCategoryModal(false);
+  };
+
+  // Nova: Handler para seleção de condição
+  const handleConditionSelect = (conditionName) => {
+    const selectedCondition = CONDITIONS.find((cond) => cond.name === conditionName);
+    if (selectedCondition) {
+      setFormData((prev) => ({ ...prev, condition: selectedCondition.value }));
+    }
+    setShowConditionModal(false);
   };
 
   // Solicita permissão para acessar a câmera
@@ -217,6 +244,18 @@ export default function SellScreen({ navigation }) {
       return;
     }
 
+    // Nova: Validação de categoria
+    if (!formData.category) {
+      Alert.alert("Campo obrigatório", "Por favor, selecione uma categoria.");
+      return;
+    }
+
+    // Nova: Validação de condição
+    if (!formData.condition) {
+      Alert.alert("Campo obrigatório", "Por favor, selecione a condição do produto.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -249,6 +288,8 @@ export default function SellScreen({ navigation }) {
         currency: formData.currency,
         price: parseFloat(numericPrice.toFixed(2)), // Garantir que seja número decimal com 2 casas
         imageUrl: imageUrl || "http://placeholder-image.com/image.jpg", // URL do Cloudinary ou placeholder
+        category: formData.category, // Nova: categoria
+        condition: formData.condition, // Nova: condição
       };
 
       // Log para debug (remover em produção)
@@ -350,6 +391,26 @@ export default function SellScreen({ navigation }) {
             onChangeText={(value) => handleInputChange("model", value)}
           />
 
+          {/* Nova: Categoria */}
+          <LabelledDropdown
+            label="Categoria"
+            value={formData.category ? getCategoryName(formData.category) : ""}
+            placeholder="Selecione a categoria"
+            onPress={() => setShowCategoryModal(true)}
+            icon={require("../../assets/flecha-icon.png")}
+            iconColor="#FF007A"
+          />
+
+          {/* Nova: Condição */}
+          <LabelledDropdown
+            label="Condição"
+            value={formData.condition ? getConditionName(formData.condition) : ""}
+            placeholder="Selecione a condição"
+            onPress={() => setShowConditionModal(true)}
+            icon={require("../../assets/flecha-icon.png")}
+            iconColor="#FF007A"
+          />
+
           {/* Preço */}
           <LabelledTextInput
             label="Preço"
@@ -392,6 +453,26 @@ export default function SellScreen({ navigation }) {
         items={currencies}
         onItemSelected={handleCurrencySelect}
         slideAnim={currencySlideAnim}
+      />
+
+      {/* Nova: Modal de Seleção de Categoria */}
+      <ActionSheetModal
+        isVisible={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        title="Selecione a categoria"
+        items={CATEGORIES.map((cat) => cat.name)}
+        onItemSelected={handleCategorySelect}
+        slideAnim={categorySlideAnim}
+      />
+
+      {/* Nova: Modal de Seleção de Condição */}
+      <ActionSheetModal
+        isVisible={showConditionModal}
+        onClose={() => setShowConditionModal(false)}
+        title="Selecione a condição"
+        items={CONDITIONS.map((cond) => cond.name)}
+        onItemSelected={handleConditionSelect}
+        slideAnim={conditionSlideAnim}
       />
     </View>
   );

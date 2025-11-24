@@ -78,35 +78,45 @@ const productService = {
   },
 
   /**
-   * Busca produtos por termo de pesquisa (busca pela brand)
+   * Busca produtos por termo de pesquisa e/ou categoria
    * @param {string} searchInput - Termo de busca (busca na brand do produto)
    * @param {string} currency - Moeda para buscar produtos
+   * @param {string} category - Categoria para filtrar (opcional)
    * @returns {Promise<Array>} Lista de produtos encontrados
    */
-  searchProducts: async (searchInput, currency = 'BRL') => {
+  searchProducts: async (searchInput, currency = 'BRL', category = null) => {
     try {
-      // Busca todos os produtos e filtra pela brand
       const token = await authService.getToken();
       const response = await api.get(`products/${currency}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          size: 100, // Buscar mais produtos para filtrar
+          size: 100,
           page: 0,
         },
       });
 
       const allProducts = response.data.content || response.data || [];
       
-      // Filtrar produtos pela brand (case-insensitive)
-      const searchTerm = searchInput.trim().toLowerCase();
+      // Filtrar produtos pela brand, model, description e categoria
+      const searchTerm = searchInput ? searchInput.trim().toLowerCase() : '';
       const filteredProducts = allProducts.filter((product) => {
+        // Filtro por categoria (se fornecido)
+        if (category && product.category !== category) {
+          return false;
+        }
+        
+        // Se não há termo de busca, retorna todos os produtos da categoria
+        if (!searchTerm) {
+          return true;
+        }
+        
+        // Busca na brand, model ou description
         const brand = (product.brand || '').toLowerCase();
         const model = (product.model || '').toLowerCase();
         const description = (product.description || '').toLowerCase();
         
-        // Busca na brand, model ou description
         return brand.includes(searchTerm) || 
                model.includes(searchTerm) || 
                description.includes(searchTerm);
@@ -116,6 +126,21 @@ const productService = {
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar produtos');
+    }
+  },
+
+  /**
+   * Busca produtos por categoria
+   * @param {string} category - Categoria para filtrar
+   * @param {string} currency - Moeda para buscar produtos
+   * @returns {Promise<Array>} Lista de produtos encontrados
+   */
+  getProductsByCategory: async (category, currency = 'BRL') => {
+    try {
+      return await productService.searchProducts('', currency, category);
+    } catch (error) {
+      console.error('Erro ao buscar produtos por categoria:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao buscar produtos por categoria');
     }
   },
 

@@ -22,12 +22,24 @@ import CategoryCard from "../components/CategoryCard";
 import ProductCard from "../components/ProductCard";
 import { navigateToFavorites } from "../utils/navigationHelpers";
 import { RESPONSIVE } from "../utils/responsive";
+import { CATEGORIES } from "../utils/constants";
 
 // Dados Estáticos de Categorias (Mantidos na tela para gerenciamento local)
+// Mapeamento dos nomes das categorias para os valores das constantes
+const categoryNameToValue = {
+  "Móveis": "MOVIES",
+  "Eletrônicos": "ELECTRONICS",
+  "Roupas": "CLOTHES",
+  "Tênis": "SNEAKERS",
+  "Livros": "BOOKS",
+  "Outros": "OTHERS",
+};
+
 const categoriesData = [
   {
     id: 1,
     name: "Móveis",
+    value: "MOVIES",
     icon: require("../../assets/cadeira-icon.png"),
     starIcon: require("../../assets/icon2-category.png"),
     starPosition: "bottom-right",
@@ -35,12 +47,19 @@ const categoriesData = [
   {
     id: 2,
     name: "Eletrônicos",
+    value: "ELECTRONICS",
     icon: require("../../assets/computador-icon.png"),
   },
-  { id: 3, name: "Roupas", icon: require("../../assets/camisa-icon.png") },
+  { 
+    id: 3, 
+    name: "Roupas", 
+    value: "CLOTHES",
+    icon: require("../../assets/camisa-icon.png") 
+  },
   {
     id: 4,
     name: "Tênis",
+    value: "SNEAKERS",
     icon: require("../../assets/tenis-icon.png"),
     starIcon: require("../../assets/icon1-category.png"),
     starPosition: "top-left",
@@ -48,11 +67,17 @@ const categoriesData = [
   {
     id: 5,
     name: "Livros",
+    value: "BOOKS",
     icon: require("../../assets/livros-icon.png"),
     starIcon: require("../../assets/icon3-category.png"),
     starPosition: "bottom-left",
   },
-  { id: 6, name: "Outros", icon: require("../../assets/lampada-icon.png") },
+  { 
+    id: 6, 
+    name: "Outros", 
+    value: "OTHERS",
+    icon: require("../../assets/lampada-icon.png") 
+  },
 ];
 
 const navItems = [
@@ -147,7 +172,29 @@ export default function CategoryScreen({ navigation }) {
   const [searchError, setSearchError] = useState(null);
 
   const handleCategoryPress = (category) => {
-    navigation.navigate("Home", { selectedCategory: category.name });
+    // Navegar para a tela de busca com a categoria selecionada
+    setSearchText("");
+    setHasSearched(true);
+    setIsSearching(true);
+    setSearchError(null);
+    
+    // Buscar produtos da categoria selecionada
+    productService.getProductsByCategory(category.value || categoryNameToValue[category.name], currency)
+      .then((results) => {
+        const productsList = Array.isArray(results) 
+          ? results 
+          : results?.content || results?.products || [];
+        setSearchResults(productsList);
+        setSearchError(null);
+      })
+      .catch((err) => {
+        console.error("Erro ao buscar produtos por categoria:", err);
+        setSearchError(err.message || "Erro ao buscar produtos");
+        setSearchResults([]);
+      })
+      .finally(() => {
+        setIsSearching(false);
+      });
   };
 
   const formatPrice = (price, productCurrency = currency) => {
