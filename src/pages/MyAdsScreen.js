@@ -72,6 +72,7 @@ export default function MyAdsScreen({ navigation }) {
   const [myAds, setMyAds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [favoriteStatus, setFavoriteStatus] = useState({}); // Mapeia productId -> isFavorite
 
   // Buscar produtos usando ProductService
   useEffect(() => {
@@ -86,7 +87,21 @@ export default function MyAdsScreen({ navigation }) {
         const productsList = Array.isArray(productsData) 
           ? productsData 
           : productsData?.content || productsData?.products || [];
-        setMyAds(productsList.slice(0, 6));
+        const limitedProducts = productsList.slice(0, 6);
+        setMyAds(limitedProducts);
+        
+        // Verifica o status de favorito de cada produto
+        const favoriteStatusMap = {};
+        for (const product of limitedProducts) {
+          try {
+            const isFav = await favoritesService.isFavorite(product.id);
+            favoriteStatusMap[product.id] = isFav;
+          } catch (err) {
+            console.error(`Erro ao verificar favorito do produto ${product.id}:`, err);
+            favoriteStatusMap[product.id] = false;
+          }
+        }
+        setFavoriteStatus(favoriteStatusMap);
       } catch (err) {
         console.error("Erro ao buscar anúncios:", err);
         setError(err.message || "Erro ao carregar anúncios");
@@ -96,7 +111,14 @@ export default function MyAdsScreen({ navigation }) {
     };
 
     fetchMyAds();
-  }, [currency]);
+    
+    // Listener para atualizar quando voltar para a tela
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchMyAds();
+    });
+
+    return unsubscribe;
+  }, [navigation, currency]);
 
   const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
@@ -108,7 +130,12 @@ export default function MyAdsScreen({ navigation }) {
   // Função para favoritar/desfavoritar produto
   const handleFavoritePress = async (product) => {
     try {
-      await favoritesService.toggleFavorite(product.id);
+      const newFavoriteStatus = await favoritesService.toggleFavorite(product.id);
+      // Atualiza o estado local do favorito
+      setFavoriteStatus(prev => ({
+        ...prev,
+        [product.id]: newFavoriteStatus
+      }));
     } catch (error) {
       console.error("Erro ao favoritar produto:", error);
     }
@@ -161,6 +188,7 @@ export default function MyAdsScreen({ navigation }) {
                   }}
                   onPress={() => handleProductPress(item.id)}
                   onFavoritePress={() => handleFavoritePress(item)}
+                  isFavorite={favoriteStatus[item.id] || false}
                 />
               ))}
             </View>

@@ -336,7 +336,7 @@ export default function SellScreen({ navigation }) {
 
       {/* Header do Formulário */}
       <FormHeader
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => navigation.navigate("Home")}
         onActionPress={isSubmitting ? () => {} : handlePublish}
         actionText={isSubmitting ? "Publicando..." : "Publicar"}
       />
