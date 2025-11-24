@@ -59,6 +59,7 @@ export default function HomeScreen({ navigation }) {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("home");
   const [refreshing, setRefreshing] = useState(false);
+  const [favoriteStatus, setFavoriteStatus] = useState({}); // Mapeia productId -> isFavorite
 
   // Esta lógica de categorias e filtros não está sendo usada no corpo do 'return',
   // mas é mantida aqui caso seja para uma seção futura da Home.
@@ -80,6 +81,19 @@ export default function HomeScreen({ navigation }) {
         ? productsData 
         : productsData?.content || productsData?.products || [];
       setProducts(productsList);
+      
+      // Verifica o status de favorito de cada produto
+      const favoriteStatusMap = {};
+      for (const product of productsList) {
+        try {
+          const isFav = await favoritesService.isFavorite(product.id);
+          favoriteStatusMap[product.id] = isFav;
+        } catch (err) {
+          console.error(`Erro ao verificar favorito do produto ${product.id}:`, err);
+          favoriteStatusMap[product.id] = false;
+        }
+      }
+      setFavoriteStatus(favoriteStatusMap);
     } catch (err) {
       console.error("Erro ao buscar produtos:", err);
       setError(err.message || "Erro ao carregar produtos");
@@ -91,6 +105,32 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory, currency]);
+
+  // Atualiza favoritos quando a tela recebe foco
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Atualiza apenas o status de favoritos sem recarregar todos os produtos
+      const updateFavoriteStatus = async () => {
+        const favoriteStatusMap = {};
+        for (const product of products) {
+          try {
+            const isFav = await favoritesService.isFavorite(product.id);
+            favoriteStatusMap[product.id] = isFav;
+          } catch (err) {
+            console.error(`Erro ao verificar favorito do produto ${product.id}:`, err);
+            favoriteStatusMap[product.id] = false;
+          }
+        }
+        setFavoriteStatus(favoriteStatusMap);
+      };
+      
+      if (products.length > 0) {
+        updateFavoriteStatus();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, products]);
 
   // Função de refresh (pull to refresh)
   const onRefresh = async () => {
@@ -114,7 +154,12 @@ export default function HomeScreen({ navigation }) {
   // Função para favoritar/desfavoritar produto
   const handleFavoritePress = async (product) => {
     try {
-      await favoritesService.toggleFavorite(product.id);
+      const newFavoriteStatus = await favoritesService.toggleFavorite(product.id);
+      // Atualiza o estado local do favorito
+      setFavoriteStatus(prev => ({
+        ...prev,
+        [product.id]: newFavoriteStatus
+      }));
     } catch (error) {
       console.error("Erro ao favoritar produto:", error);
     }
@@ -209,6 +254,7 @@ export default function HomeScreen({ navigation }) {
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
                   onFavoritePress={() => handleFavoritePress(item)}
+                  isFavorite={favoriteStatus[item.id] || false}
                 />
               ))}
             </ScrollView>
@@ -247,6 +293,7 @@ export default function HomeScreen({ navigation }) {
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
                   onFavoritePress={() => handleFavoritePress(item)}
+                  isFavorite={favoriteStatus[item.id] || false}
                 />
               ))}
           </ScrollView>
@@ -280,6 +327,7 @@ export default function HomeScreen({ navigation }) {
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
                   onFavoritePress={() => handleFavoritePress(item)}
+                  isFavorite={favoriteStatus[item.id] || false}
                 />
               ))}
           </ScrollView>

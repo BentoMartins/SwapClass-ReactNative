@@ -40,9 +40,9 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   favoriteIcon: {
-    fontSize: 18,
-    color: "#FF007A", // Rosa para contrastar com o fundo preto
-    fontWeight: "bold",
+    width: 35,
+    height: 30,
+    resizeMode: "contain",
   },
   productInfo: {
     paddingHorizontal: RESPONSIVE.PADDING_SMALL,
@@ -70,11 +70,13 @@ const styles = StyleSheet.create({
  * @param {object} product - Objeto contendo { id, imageUri, price, title }.
  * @param {function} onPress - Função chamada ao clicar no card.
  * @param {function} onFavoritePress - Função chamada ao clicar no ícone de favorito.
+ * @param {boolean} isFavorite - Indica se o produto está favoritado (sempre true na tela de favoritos).
  */
 export default function FavoriteProductCard({
   product,
   onPress,
   onFavoritePress,
+  isFavorite = true,
 }) {
   return (
     <TouchableOpacity
@@ -91,7 +93,14 @@ export default function FavoriteProductCard({
 
         {/* Botão de Favoritar no canto superior direito */}
         <TouchableOpacity style={styles.favoriteButton} onPress={onFavoritePress}>
-          <Text style={styles.favoriteIcon}>♡</Text>
+          <Image
+            source={
+              isFavorite
+                ? require("../../assets/coracaoFavoritoPreenchido-icon.png")
+                : require("../../assets/coracaoFavorito-icon.png")
+            }
+            style={styles.favoriteIcon}
+          />
         </TouchableOpacity>
       </View>
 
