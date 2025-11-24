@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { RESPONSIVE, getColumns } from "../utils/responsive";
 import productService from "../services/product";
+import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes
@@ -104,6 +105,15 @@ export default function MyAdsScreen({ navigation }) {
     });
   };
 
+  // Função para favoritar/desfavoritar produto
+  const handleFavoritePress = async (product) => {
+    try {
+      await favoritesService.toggleFavorite(product.id);
+    } catch (error) {
+      console.error("Erro ao favoritar produto:", error);
+    }
+  };
+
   const handleBackPress = () => {
     navigation.goBack();
   };
@@ -150,7 +160,7 @@ export default function MyAdsScreen({ navigation }) {
                     title: item.brand || item.model || item.title || "Produto",
                   }}
                   onPress={() => handleProductPress(item.id)}
-                  onFavoritePress={() => console.log(`Favoritar item ${item.id}`)}
+                  onFavoritePress={() => handleFavoritePress(item)}
                 />
               ))}
             </View>

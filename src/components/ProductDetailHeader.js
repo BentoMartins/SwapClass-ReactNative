@@ -46,7 +46,11 @@ export default function ProductDetailHeader({
       </TouchableOpacity>
       <TouchableOpacity style={styles.iconButton} onPress={onFavoritePress}>
         <Image
-          source={require("../../assets/coracao-icon.png")}
+          source={
+            isFavorite
+              ? require("../../assets/coracaoPreenchido-icon.png")
+              : require("../../assets/coracao-icon.png")
+          }
           style={styles.icon}
         />
       </TouchableOpacity>

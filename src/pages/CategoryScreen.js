@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import productService from "../services/product";
+import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes Genéricos Reutilizados
@@ -156,6 +157,15 @@ export default function CategoryScreen({ navigation }) {
     });
   };
 
+  // Função para favoritar/desfavoritar produto
+  const handleFavoritePress = async (product) => {
+    try {
+      await favoritesService.toggleFavorite(product.id);
+    } catch (error) {
+      console.error("Erro ao favoritar produto:", error);
+    }
+  };
+
   const handleSearch = async () => {
     if (!searchText.trim()) {
       // Se o campo estiver vazio, limpa os resultados e mostra as categorias
@@ -258,9 +268,7 @@ export default function CategoryScreen({ navigation }) {
                         productId: item.id,
                       })
                     }
-                    onFavoritePress={() =>
-                      console.log(`Favoritar item ${item.id}`)
-                    }
+                    onFavoritePress={() => handleFavoritePress(item)}
                   />
                 ))}
               </View>

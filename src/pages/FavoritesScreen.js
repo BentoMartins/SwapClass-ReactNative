@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { RESPONSIVE } from "../utils/responsive";
 import { navigateToFavorites } from "../utils/navigationHelpers";
-import productService from "../services/product";
+import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes
@@ -67,39 +67,20 @@ export default function FavoritesScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Buscar produtos usando ProductService (simulando favoritos)
+  // Buscar favoritos da API
   useEffect(() => {
     const fetchFavorites = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Em produção, isso viria de uma API específica do usuário
-        // Por enquanto, busca produtos gerais e limita a 4
-        const productsData = await productService.getProducts(currency, 0, 4);
-        const productsList = Array.isArray(productsData) 
-          ? productsData 
-          : productsData?.content || productsData?.products || [];
-        const products = productsList.slice(0, 4);
+        const productsList = await favoritesService.getFavorites();
         
-        // Adicionar alguns descontos para alguns produtos
-        const favoritesWithDiscounts = products.map((product, index) => {
+        // Formata os produtos para o formato esperado pelo componente
+        const formattedFavorites = productsList.map((product) => {
           const productCurrency = product.currency || currency;
           const formattedPrice = formatPrice(product.price, productCurrency);
-          // Adicionar desconto para alguns produtos
-          if (index === 1 || index === 3) {
-            const discount = 10;
-            const originalPrice = formatPrice(product.price, productCurrency);
-            const discountedPrice = formatPrice(product.price * 0.9, productCurrency);
-            return {
-              id: product.id,
-              imageUri: product.imageUrl || product.image,
-              price: discountedPrice,
-              originalPrice: originalPrice,
-              discount: discount,
-              title: product.brand || product.model || product.title || "Produto",
-            };
-          }
+          
           return {
             id: product.id,
             imageUri: product.imageUrl || product.image,
@@ -108,7 +89,7 @@ export default function FavoritesScreen({ navigation }) {
           };
         });
         
-        setFavorites(favoritesWithDiscounts);
+        setFavorites(formattedFavorites);
       } catch (err) {
         console.error("Erro ao buscar favoritos:", err);
         setError(err.message || "Erro ao carregar favoritos");
@@ -118,7 +99,14 @@ export default function FavoritesScreen({ navigation }) {
     };
 
     fetchFavorites();
-  }, [currency]);
+    
+    // Listener para atualizar quando voltar para a tela
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchFavorites();
+    });
+
+    return unsubscribe;
+  }, [navigation, currency]);
 
   const formatPrice = (price, productCurrency = currency) => {
     return price.toLocaleString("pt-BR", {
@@ -141,9 +129,15 @@ export default function FavoritesScreen({ navigation }) {
     navigation.navigate("ProductDetail", { productId });
   };
 
-  const handleFavoritePress = (productId) => {
-    // Remover dos favoritos
-    setFavorites(favorites.filter((item) => item.id !== productId));
+  const handleFavoritePress = async (productId) => {
+    try {
+      // Remove dos favoritos
+      await favoritesService.removeFavorite(productId);
+      // Atualiza a lista local
+      setFavorites(favorites.filter((item) => item.id !== productId));
+    } catch (error) {
+      console.error("Erro ao remover favorito:", error);
+    }
   };
 
   return (

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { RESPONSIVE } from "../utils/responsive";
 import productService from "../services/product";
+import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -46,6 +47,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [displayCurrency, setDisplayCurrency] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
   
   // Animação para o modal de moeda
   const currencySlideAnim = useRef(new Animated.Value(300)).current;
@@ -70,6 +72,10 @@ export default function ProductDetailScreen({ route, navigation }) {
           // Inicializa o preço exibido com o preço original do produto
           setDisplayPrice(result.product.price);
           setDisplayCurrency(result.product.currency || currency);
+          
+          // Verifica se o produto está favoritado
+          const favoriteStatus = await favoritesService.isFavorite(productId);
+          setIsFavorite(favoriteStatus);
         }
       } catch (err) {
         console.error("Erro ao buscar produto:", err);
@@ -103,8 +109,18 @@ export default function ProductDetailScreen({ route, navigation }) {
     navigation.goBack();
   };
 
-  const handleFavoritePress = () => {
-    setIsFavorite(!isFavorite);
+  const handleFavoritePress = async () => {
+    if (!product || isLoadingFavorite) return;
+    
+    setIsLoadingFavorite(true);
+    try {
+      const newFavoriteStatus = await favoritesService.toggleFavorite(product.id);
+      setIsFavorite(newFavoriteStatus);
+    } catch (error) {
+      console.error("Erro ao favoritar produto:", error);
+    } finally {
+      setIsLoadingFavorite(false);
+    }
   };
 
   // Função para abrir o modal de seleção de moeda

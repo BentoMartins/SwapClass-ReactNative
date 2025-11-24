@@ -12,6 +12,7 @@ import {
 import { RESPONSIVE, getColumns } from "../utils/responsive";
 import { navigateToFavorites } from "../utils/navigationHelpers";
 import productService from "../services/product";
+import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 
 // Componentes Genéricos
@@ -110,6 +111,15 @@ export default function HomeScreen({ navigation }) {
     });
   };
 
+  // Função para favoritar/desfavoritar produto
+  const handleFavoritePress = async (product) => {
+    try {
+      await favoritesService.toggleFavorite(product.id);
+    } catch (error) {
+      console.error("Erro ao favoritar produto:", error);
+    }
+  };
+
   // Se houver um erro, mostra a mensagem de erro
   if (error && !isLoading) {
     return (
@@ -198,9 +208,7 @@ export default function HomeScreen({ navigation }) {
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
-                  onFavoritePress={() =>
-                    console.log(`Favoritar item ${item.id}`)
-                  }
+                  onFavoritePress={() => handleFavoritePress(item)}
                 />
               ))}
             </ScrollView>
@@ -238,9 +246,7 @@ export default function HomeScreen({ navigation }) {
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
-                  onFavoritePress={() =>
-                    console.log(`Favoritar item ${item.id}`)
-                  }
+                  onFavoritePress={() => handleFavoritePress(item)}
                 />
               ))}
           </ScrollView>
@@ -273,9 +279,7 @@ export default function HomeScreen({ navigation }) {
                   onPress={() =>
                     navigation.navigate("ProductDetail", { productId: item.id })
                   }
-                  onFavoritePress={() =>
-                    console.log(`Favoritar item ${item.id}`)
-                  }
+                  onFavoritePress={() => handleFavoritePress(item)}
                 />
               ))}
           </ScrollView>
