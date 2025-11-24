@@ -13,6 +13,7 @@ import productService from "../services/product";
 import favoritesService from "../services/favorites";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAuth } from "../contexts/AuthContext";
+import { getConditionName, getCategoryName } from "../utils/constants";
 
 // Componentes de Detalhes do Produto
 import ProductDetailHeader from "../components/ProductDetailHeader";
@@ -20,6 +21,7 @@ import ProductImageCarousel from "../components/ProductImageCarousel";
 import ProductInfoSection from "../components/ProductInfoSection";
 import ProductDescriptionSection from "../components/ProductDescriptionSection";
 import ProductConditionSection from "../components/ProductConditionSection";
+import ProductCategorySection from "../components/ProductCategorySection";
 import LocationSection from "../components/LocationSection";
 import UniversitySection from "../components/UniversitySection";
 import DataLoadingState from "../components/DataLoadingState";
@@ -265,9 +267,24 @@ export default function ProductDetailScreen({ route, navigation }) {
   // Dados mockados para demonstração (mantidos apenas para campos não disponíveis na API)
   const mockData = {
     distance: "Perto - 4 km",
-    condition: "Novo - Nunca Usado.",
     location: "Passo Fundo - RS",
     universityName: "UPF - Universidade de Passo Fundo",
+  };
+
+  // Função para obter a condição formatada do produto
+  const getProductCondition = () => {
+    if (!product?.condition) {
+      return "Condição não informada";
+    }
+    return getConditionName(product.condition);
+  };
+
+  // Função para obter a categoria formatada do produto
+  const getProductCategory = () => {
+    if (!product?.category) {
+      return "Categoria não informada";
+    }
+    return getCategoryName(product.category);
   };
 
   // Atualiza handleMessagePress para usar o telefone do vendedor
@@ -364,8 +381,11 @@ export default function ProductDetailScreen({ route, navigation }) {
           highlightText={""}
         />
 
+        {/* Seção de categoria */}
+        <ProductCategorySection category={getProductCategory()} />
+
         {/* Seção de condição */}
-        <ProductConditionSection condition={mockData.condition} />
+        <ProductConditionSection condition={getProductCondition()} />
 
         {/* Seção de localização */}
         <LocationSection

@@ -216,7 +216,7 @@ export default function SellScreen({ navigation }) {
   const handlePublish = async () => {
     // Validação dos campos obrigatórios
     if (!formData.title.trim()) {
-      Alert.alert("Campo obrigatório", "Por favor, preencha a marca do item.");
+      Alert.alert("Campo obrigatório", "Por favor, preencha o título do item.");
       return;
     }
 
@@ -377,8 +377,8 @@ export default function SellScreen({ navigation }) {
         <View style={styles.formSection}>
           {/* Título (será enviado como brand) */}
           <LabelledTextInput
-            label="Marca"
-            placeholder="Digite a marca do item"
+            label="Título"
+            placeholder="Digite o título do item"
             value={formData.title}
             onChangeText={(value) => handleInputChange("title", value)}
           />
