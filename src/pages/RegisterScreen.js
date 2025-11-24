@@ -91,6 +91,7 @@ export default function RegisterScreen({ navigation }) {
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
+    telefone: "",
     email: "",
     senha: "",
     confirmarSenha: "",
@@ -108,6 +109,7 @@ export default function RegisterScreen({ navigation }) {
     return (
       formData.nome.trim() !== "" &&
       formData.sobrenome.trim() !== "" &&
+      formData.telefone.trim() !== "" &&
       formData.email.trim() !== "" &&
       formData.senha.trim() !== "" &&
       formData.confirmarSenha.trim() !== "" &&
@@ -132,6 +134,7 @@ export default function RegisterScreen({ navigation }) {
     if (
       !formData.nome ||
       !formData.sobrenome ||
+      !formData.telefone ||
       !formData.email ||
       !formData.senha
     ) {
@@ -142,8 +145,8 @@ export default function RegisterScreen({ navigation }) {
     // Combina nome e sobrenome para enviar como "name"
     const fullName = `${formData.nome} ${formData.sobrenome}`.trim();
 
-    // Envia apenas name, email e password para o microserviço
-    const result = await signup(fullName, formData.email, formData.senha);
+    // Envia name, email, password e phone para o microserviço
+    const result = await signup(fullName, formData.email, formData.senha, formData.telefone);
 
     if (result.success) {
       Alert.alert("Sucesso", "Conta criada com sucesso!");
@@ -201,6 +204,14 @@ export default function RegisterScreen({ navigation }) {
               />
             </View>
           </View>
+
+          {/* Número de celular */}
+          <InputWithShadow
+            placeholder="Número de celular"
+            value={formData.telefone}
+            onChangeText={(value) => handleInputChange("telefone", value)}
+            keyboardType="phone-pad"
+          />
 
           {/* Email Universitário */}
           <InputWithShadow

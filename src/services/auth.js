@@ -5,11 +5,12 @@ const TOKEN_KEY = '@auth_token';
 
 export const authService = {
   // Registro de novo usuário
-  signup: async (name, email, password) => {
+  signup: async (name, email, password, phone) => {
     const response = await api.post('/auth/signup', {
       name,
       email,
       password,
+      phone,
     });
     
     // Extrai o token da resposta, tratando diferentes formatos

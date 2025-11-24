@@ -34,15 +34,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, phone) => {
     try {
-      const data = await authService.signup(name, email, password);
+      const data = await authService.signup(name, email, password, phone);
       
       // Armazena dados do usuário
       const userData = {
         name: name,
         email: email,
-        ...(data?.user || {}), // Se a API retornar dados adicionais do usuário
+        phone: phone,
+        ...(data?.user || data || {}), // Se a API retornar dados adicionais do usuário
       };
       
       setUser(userData);
@@ -69,7 +70,11 @@ export const AuthProvider = ({ children }) => {
       if (data?.user) {
         userData = data.user;
       } else if (data?.name && data?.email) {
-        userData = { name: data.name, email: data.email };
+        userData = { 
+          name: data.name, 
+          email: data.email,
+          phone: data.phone || null,
+        };
       } else {
         // Tenta buscar dados salvos anteriormente
         const savedUserData = await AsyncStorage.getItem(USER_DATA_KEY);
@@ -82,6 +87,7 @@ export const AuthProvider = ({ children }) => {
           userData = {
             name: email.split('@')[0],
             email: email,
+            phone: null,
           };
         }
       }

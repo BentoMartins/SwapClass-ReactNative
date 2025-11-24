@@ -258,6 +258,7 @@ export default function ProductDetailScreen({ route, navigation }) {
            product?.seller?.phone || 
            product?.owner?.phone || 
            product?.user?.phone ||
+           user?.phone || // Busca do usuário logado
            null;
   };
 

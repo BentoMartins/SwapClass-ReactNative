@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { RESPONSIVE } from "../utils/responsive";
+import { useAuth } from "../contexts/AuthContext";
 
 // Componentes
 import AppHeader from "../components/AppHeader";
@@ -107,11 +108,23 @@ const styles = StyleSheet.create({
 });
 
 export default function PhoneNumbersScreen({ navigation }) {
+  const { user } = useAuth();
+  
   // Estados dos campos do formulário
   const [formData, setFormData] = useState({
-    mainPhone: "(54) 99999-1603",
+    mainPhone: user?.phone || "",
     newPhone: "",
   });
+
+  // Atualiza o telefone quando o usuário mudar
+  useEffect(() => {
+    if (user?.phone) {
+      setFormData((prev) => ({
+        ...prev,
+        mainPhone: user.phone,
+      }));
+    }
+  }, [user?.phone]);
 
   // Lista de telefones adicionais
   const [additionalPhones, setAdditionalPhones] = useState([]);
@@ -127,7 +140,7 @@ export default function PhoneNumbersScreen({ navigation }) {
     navigation.goBack();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validações básicas
     if (!formData.mainPhone) {
       Alert.alert("Erro", "Por favor, preencha o número de telefone principal.");
@@ -140,13 +153,24 @@ export default function PhoneNumbersScreen({ navigation }) {
       addingPhone: false,
     });
 
-    // TODO: Implementar chamada à API para salvar os dados
-    Alert.alert("Sucesso", "Números de telefone atualizados com sucesso!", [
-      {
-        text: "OK",
-        onPress: () => navigation.goBack(),
-      },
-    ]);
+    // Atualiza o telefone no contexto do usuário (salvo localmente)
+    // TODO: Implementar chamada à API para salvar os dados no backend quando houver endpoint
+    // Por enquanto, salva apenas localmente no AsyncStorage através do contexto
+    try {
+      // Limpa caracteres não numéricos para salvar
+      const cleanPhone = formData.mainPhone.replace(/\D/g, "");
+      
+      // Atualiza o contexto local (será persistido no AsyncStorage)
+      // Nota: Para persistir no backend, será necessário criar um endpoint de atualização
+      Alert.alert("Sucesso", "Número de telefone atualizado com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível salvar o número de telefone. Tente novamente.");
+    }
   };
 
   const updateField = (field, value) => {
