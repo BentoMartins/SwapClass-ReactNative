@@ -70,9 +70,8 @@ const styles = StyleSheet.create({
  * @param {object} product - Objeto contendo { id, imageUri, price, title }.
  * @param {function} onPress - Função chamada ao clicar no card.
  * @param {function} onFavoritePress - Função chamada ao clicar no ícone de favorito.
- * @param {boolean} isFavorite - Indica se o produto está favoritado.
  */
-export default function ProductCard({ product, onPress, onFavoritePress, isFavorite = false }) {
+export default function ProductCard({ product, onPress, onFavoritePress }) {
   return (
     <View style={styles.productWrapper}>
       {/* Card da Imagem */}
@@ -91,11 +90,7 @@ export default function ProductCard({ product, onPress, onFavoritePress, isFavor
           {/* Botão de Favoritar sobreposto na imagem */}
           <TouchableOpacity style={styles.favoriteButton} onPress={onFavoritePress}>
             <Image
-              source={
-                isFavorite
-                  ? require("../../assets/coracaoFavoritoPreenchido-icon.png")
-                  : require("../../assets/coracaoFavorito-icon.png")
-              }
+              source={require("../../assets/coracaoFavorito-icon.png")}
               style={styles.favoriteIcon}
             />
           </TouchableOpacity>

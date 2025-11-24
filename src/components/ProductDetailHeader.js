@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   icon: {
-    width: 20,
+    width: 22,
     height: 20,
     tintColor: "#FF007A",
   },
