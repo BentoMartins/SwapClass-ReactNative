@@ -4,7 +4,7 @@ import { RESPONSIVE } from "../utils/responsive";
 
 const styles = StyleSheet.create({
   card: {
-    width: "48%", // 2 colunas com espaço entre
+    width: "80%", // 2 colunas com espaço entre
     backgroundColor: "#fff",
     borderRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
     marginBottom: RESPONSIVE.MARGIN_MEDIUM,
@@ -12,76 +12,62 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   imageContainer: {
-    width: "100%",
+    width: "90%",
     height: 180,
     position: "relative",
+    borderTopLeftRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    borderTopRightRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    borderBottomLeftRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    borderBottomRightRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    overflow: "hidden",
   },
   productImage: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
-  favoriteIcon: {
+  favoriteButton: {
     position: "absolute",
-    top: RESPONSIVE.PADDING_SMALL,
-    left: RESPONSIVE.PADDING_SMALL,
-    zIndex: 2,
-  },
-  favoriteIconImage: {
-    width: 24,
-    height: 24,
-    tintColor: "#fff",
-  },
-  discountBadge: {
-    position: "absolute",
-    top: RESPONSIVE.PADDING_SMALL,
-    right: RESPONSIVE.PADDING_SMALL,
-    backgroundColor: "#FF007A",
-    paddingHorizontal: RESPONSIVE.PADDING_SMALL,
-    paddingVertical: RESPONSIVE.PADDING_XS / 2,
-    borderRadius: RESPONSIVE.BORDER_RADIUS_SMALL,
-    transform: [{ rotate: "15deg" }],
-  },
-  discountText: {
-    fontSize: RESPONSIVE.BODY_SMALL,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  priceBadge: {
-    position: "absolute",
-    bottom: RESPONSIVE.PADDING_SMALL,
-    alignSelf: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    paddingHorizontal: RESPONSIVE.PADDING_MEDIUM,
-    paddingVertical: RESPONSIVE.PADDING_XS,
-    borderRadius: RESPONSIVE.BORDER_RADIUS_MEDIUM,
-  },
-  priceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    top: 10,
+    right: 10, // Canto superior direito
+    zIndex: 1,
+    width: 36, // Tamanho fixo do círculo
+    height: 36, // Tamanho fixo do círculo
+    borderRadius: 18, // Círculo perfeito
+    backgroundColor: "#000", // Fundo preto
     justifyContent: "center",
+    alignItems: "center",
+    padding: 0,
   },
-  originalPrice: {
+  favoriteIcon: {
+    fontSize: 18,
+    color: "#FF007A", // Rosa para contrastar com o fundo preto
+    fontWeight: "bold",
+  },
+  productInfo: {
+    paddingHorizontal: RESPONSIVE.PADDING_SMALL,
+    paddingVertical: RESPONSIVE.PADDING_XS,
+    width: "100%",
+    borderBottomLeftRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    borderBottomRightRadius: RESPONSIVE.BORDER_RADIUS_LARGE,
+    backgroundColor: "#fff",
+  },
+  productTitle: {
     fontSize: RESPONSIVE.BODY_SMALL,
-    color: "#fff",
-    textDecorationLine: "line-through",
-    marginRight: RESPONSIVE.MARGIN_XS / 2,
+    fontWeight: "500",
+    color: "#333",
+    marginBottom: 4,
   },
-  finalPrice: {
+  priceText: {
     fontSize: RESPONSIVE.BODY_MEDIUM,
     fontWeight: "bold",
-    color: "#fff",
-  },
-  singlePrice: {
-    fontSize: RESPONSIVE.BODY_MEDIUM,
-    fontWeight: "bold",
-    color: "#fff",
+    color: "#000",
   },
 });
 
 /**
- * Card de produto para a tela de favoritos com badge de preço e desconto.
- * @param {object} product - Objeto contendo { id, imageUri, price, originalPrice, discount }.
+ * Card de produto para a tela de favoritos com informações abaixo da imagem.
+ * @param {object} product - Objeto contendo { id, imageUri, price, title }.
  * @param {function} onPress - Função chamada ao clicar no card.
  * @param {function} onFavoritePress - Função chamada ao clicar no ícone de favorito.
  */
@@ -90,8 +76,6 @@ export default function FavoriteProductCard({
   onPress,
   onFavoritePress,
 }) {
-  const hasDiscount = product.originalPrice && product.discount;
-
   return (
     <TouchableOpacity
       style={styles.card}
@@ -105,36 +89,20 @@ export default function FavoriteProductCard({
           resizeMode="cover"
         />
 
-        {/* Ícone de favorito */}
-        <TouchableOpacity
-          style={styles.favoriteIcon}
-          onPress={onFavoritePress}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require("../../assets/coracao-icon.png")}
-            style={styles.favoriteIconImage}
-          />
+        {/* Botão de Favoritar no canto superior direito */}
+        <TouchableOpacity style={styles.favoriteButton} onPress={onFavoritePress}>
+          <Text style={styles.favoriteIcon}>♡</Text>
         </TouchableOpacity>
+      </View>
 
-        {/* Badge de desconto (se houver) */}
-        {hasDiscount && (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>{product.discount}%</Text>
-          </View>
+      {/* Informações do produto abaixo da imagem */}
+      <View style={styles.productInfo}>
+        {product.title && (
+          <Text style={styles.productTitle} numberOfLines={2}>
+            {product.title}
+          </Text>
         )}
-
-        {/* Badge de preço */}
-        <View style={styles.priceBadge}>
-          {hasDiscount ? (
-            <View style={styles.priceContainer}>
-              <Text style={styles.originalPrice}>{product.originalPrice}</Text>
-              <Text style={styles.finalPrice}>{product.price}</Text>
-            </View>
-          ) : (
-            <Text style={styles.singlePrice}>{product.price}</Text>
-          )}
-        </View>
+        <Text style={styles.priceText}>{product.price}</Text>
       </View>
     </TouchableOpacity>
   );
