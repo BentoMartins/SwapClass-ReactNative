@@ -75,8 +75,6 @@ Abaixo está o processo para executar **backend e frontend** localmente.
    docker-compose up --build -d
    ```
 
-4. Verifique se a API Gateway está rodando na porta **8765**.
-
 5. Descubra o **IPv4 da sua máquina** (necessário para configurar o app):
 
    ```
@@ -133,17 +131,16 @@ Abaixo está o processo para executar **backend e frontend** localmente.
 
 ### **Frontend**
 
-* React Native 0.81+
-* React 19
-* Expo 54
+* React Native
+* React
+* Expo
 * Axios
 * React Navigation
-* Google Fonts (Montserrat)
 
 ### **Backend**
 
 * Java 17+
-* Spring Boot (Microservices)
+* Spring Boot
 * Spring Cloud Gateway
 * Eureka Discovery Server
 * Spring Data JPA
